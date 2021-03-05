@@ -77,15 +77,17 @@ export class PedometerProcessingNode<InOut extends IMUDataFrame> extends Process
                         0,
                         LinearVelocityUnit.METER_PER_SECOND,
                     );
-                    const relativePosition = Vector3.fromArray([0, 0, 0]);
-                    relativePosition.applyMatrix4(
-                        new Matrix4().makeTranslation(distance / this.options.windowSize, 0, 0),
-                    );
-                    position.fromVector(
-                        position
-                            .toVector3(LengthUnit.METER)
-                            .add(relativePosition.applyQuaternion(position.orientation)),
-                    );
+                    if (position.orientation) {
+                        const relativePosition = Vector3.fromArray([0, 0, 0]);
+                        relativePosition.applyMatrix4(
+                            new Matrix4().makeTranslation(distance / this.options.windowSize, 0, 0),
+                        );
+                        position.fromVector(
+                            position
+                                .toVector3(LengthUnit.METER)
+                                .add(relativePosition.applyQuaternion(position.orientation)),
+                        );
+                    }
                     return this.setNodeData(frame.source, pedometerData);
                 })
                 .then(() => {
@@ -107,6 +109,7 @@ export class PedometerProcessingNode<InOut extends IMUDataFrame> extends Process
             if (verticalComponent.length < windowSize) {
                 return resolve([]);
             }
+
             let smoothedVerticalComponent = verticalComponent;
             if (this.options.meanFilterSize > 1) {
                 smoothedVerticalComponent = this._meanFilter(verticalComponent, this.options.meanFilterSize);

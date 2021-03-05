@@ -1,12 +1,12 @@
 import { IMUDataFrame, FilterProcessingNode, DataObject, Quaternion } from '@openhps/core';
 
 /**
- * Relative rotation processing node
+ * Relative orientation processing node
  *
  * @see {@link https://www.w3.org/TR/motion-sensors/#relative-orientation-sensor}
  * @category Processing node
  */
-export class RelativeRotationProcessingNode extends FilterProcessingNode<IMUDataFrame> {
+export class RelativeOrientationProcessingNode extends FilterProcessingNode<IMUDataFrame> {
     public initFilter(_: DataObject, frame: IMUDataFrame): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             if (!frame.angularVelocity || !frame.acceleration) {
@@ -44,7 +44,6 @@ export class RelativeRotationProcessingNode extends FilterProcessingNode<IMUData
             const gamma: number = bias * (filter.gamma + gyro.y * dt) + (1.0 - bias) * ((accl.y * -scale) / norm);
 
             frame.relativeOrientation = Quaternion.fromEuler([beta, gamma, alpha]);
-
             resolve(object);
         });
     }

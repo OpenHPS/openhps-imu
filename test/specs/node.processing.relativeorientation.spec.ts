@@ -14,7 +14,7 @@ import {
     AngularVelocityUnit,
 } from '@openhps/core';
 import {
-    RelativeRotationProcessingNode
+    RelativeOrientationProcessingNode
 } from '../../src';
 
 describe('node', () => {
@@ -30,7 +30,7 @@ describe('node', () => {
             ModelBuilder.create()
                 .addService(timeService)
                 .from(new CallbackSourceNode())
-                .via(new RelativeRotationProcessingNode())
+                .via(new RelativeOrientationProcessingNode())
                 .to(callbackSink)
                 .build()
                 .then((m) => {

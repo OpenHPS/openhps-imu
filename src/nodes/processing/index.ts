@@ -1,7 +1,7 @@
 import { VelocityCalculationNode, VelocityProcessingNode } from '@openhps/core';
 export * from './calibration';
 export * from './AccelerationProcessingNode';
-export * from './RelativeRotationProcessingNode';
+export * from './RelativeOrientationProcessingNode';
 export * from './GravityProcessingNode';
 export * from './GeomagneticOrientationProcessingNode';
 export * from './PedometerProcessingNode';

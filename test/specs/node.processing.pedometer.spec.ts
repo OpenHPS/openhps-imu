@@ -1,18 +1,22 @@
 import { 
     Absolute2DPosition, 
     Acceleration, 
+    AccelerationUnit, 
     AngleUnit, 
     CallbackSinkNode, 
     DataFrame, 
+    DataObject, 
     IMUDataFrame, 
     IMUSensorObject, 
     Model, 
     ModelBuilder, 
-    Orientation, 
+    Orientation,
+    SMAFilterNode, 
 } from "@openhps/core";
 import { CSVDataSource } from "@openhps/csv";
 import { expect } from 'chai';
 import {
+    GravityProcessingNode,
     PedometerData,
     PedometerProcessingNode 
 } from '../../src';
@@ -83,4 +87,78 @@ describe('node processing pedometer', () => {
         }).catch(done);
     });
     
+    describe('2021-03-0516.14.44 dataset', () => {
+        let model: Model<any, any>;
+        let sink: CallbackSinkNode<any> = new CallbackSinkNode();
+        const user = new DataObject("user");
+        user.setPosition(new Absolute2DPosition(0, 0));
+
+        before(function(done) {
+            ModelBuilder.create()
+                .from(new CSVDataSource("test/data/imu/2021-03-0516.14.44.csv", (row: any) => {
+                    const frame = new IMUDataFrame();
+                    frame.frequency = 100;
+
+                    frame.source = user;
+
+                    const roll = parseFloat(row['Roll'].replace(',', '.'));
+                    const pitch = parseFloat(row['Pitch'].replace(',', '.'));
+                    const yaw = parseFloat(row['Azimuth'].replace(',', '.'));
+
+                    frame.absoluteOrientation = Orientation.fromEuler({
+                        z: yaw,
+                        y: roll,
+                        x: pitch,
+                        unit: AngleUnit.DEGREE,
+                        order: 'XYZ'
+                    });
+                    frame.acceleration = new Acceleration(
+                        parseFloat(row['ax'].replace(',', '.')),
+                        parseFloat(row['ay'].replace(',', '.')),
+                        parseFloat(row['az'].replace(',', '.'))
+                    );
+                    // frame.linearAcceleration = new Acceleration(
+                    //     parseFloat(row['ax'].replace(',', '.')),
+                    //     parseFloat(row['ay'].replace(',', '.')),
+                    //     parseFloat(row['az'].replace(',', '.'))
+                    // );
+                    frame.acceleration.add(new Acceleration(
+                        parseFloat(row['gFx'].replace(',', '.')),
+                        parseFloat(row['gFy'].replace(',', '.')),
+                        parseFloat(row['gFz'].replace(',', '.')),
+                        AccelerationUnit.GRAVITATIONAL_FORCE
+                    ));
+                    return frame;
+                }, {
+                    uid: "source",
+                    separator: ";"
+                }))
+                .via(new SMAFilterNode((obj, frame) => [frame, "acceleration"], {
+                    taps: 20
+                }))
+                .via(new GravityProcessingNode())
+                .via(new PedometerProcessingNode({
+                    stepSize: 1
+                }))
+                .to(sink)
+                .build().then(m => {
+                    model = m;
+                    done();
+                })
+        });
+
+        it('should count steps using processed acceleration', (done) => {
+            let step = 0;
+            sink.callback = (frame: IMUDataFrame) => {
+                step += frame.source.getPosition().linearVelocity.x;
+            };
+
+            model.pull({
+                count: (model.findNodeByUID("source") as CSVDataSource<any>).size
+            }).then(() => {
+                expect(step).to.equal(24);
+                done();
+            }).catch(done);
+        });
+    });
 });
