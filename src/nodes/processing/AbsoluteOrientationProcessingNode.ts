@@ -6,7 +6,7 @@ import { DataObject, FilterProcessingNode, IMUDataFrame, Quaternion } from '@ope
  * @see {@link https://github.com/visakhanc/eCompass/blob/master/source/main.c}
  * @category Processing node
  */
-export class GeomagneticOrientationProcessingNode extends FilterProcessingNode<IMUDataFrame> {
+export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<IMUDataFrame> {
     public initFilter(object: DataObject, frame: IMUDataFrame): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             if (frame.angularVelocity || frame.acceleration === undefined) {
@@ -47,8 +47,7 @@ export class GeomagneticOrientationProcessingNode extends FilterProcessingNode<I
                 azimuth = 2 * Math.PI + azimuth;
             }
 
-            frame.geomagneticOrientation = Quaternion.fromEuler([pitch, roll, azimuth]);
-
+            frame.absoluteOrientation = Quaternion.fromEuler([pitch, roll, azimuth]);
             resolve(object);
         });
     }

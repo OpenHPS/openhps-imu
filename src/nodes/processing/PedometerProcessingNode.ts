@@ -6,7 +6,6 @@ import {
     SerializableMember,
     SerializableObject,
     Euler,
-    Matrix4,
     LinearVelocityUnit,
     Vector3,
     LengthUnit,
@@ -78,14 +77,12 @@ export class PedometerProcessingNode<InOut extends IMUDataFrame> extends Process
                         LinearVelocityUnit.METER_PER_SECOND,
                     );
                     if (position.orientation) {
-                        const relativePosition = Vector3.fromArray([0, 0, 0]);
-                        relativePosition.applyMatrix4(
-                            new Matrix4().makeTranslation(distance / this.options.windowSize, 0, 0),
-                        );
+                        const relativePosition = Vector3.fromArray([distance / this.options.windowSize, 0, 0]);
+                        const orientation = position.orientation.toEuler();
+                        orientation.x = 0;
+                        orientation.y = 0;
                         position.fromVector(
-                            position
-                                .toVector3(LengthUnit.METER)
-                                .add(relativePosition.applyQuaternion(position.orientation)),
+                            position.toVector3(LengthUnit.METER).add(relativePosition.applyEuler(orientation)),
                         );
                     }
                     return this.setNodeData(frame.source, pedometerData);

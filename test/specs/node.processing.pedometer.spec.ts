@@ -61,7 +61,7 @@ describe('node processing pedometer', () => {
             }).catch(done);
     });
 
-    it('should count 116 steps without streaming', (done) => {
+    it('should count ~116 steps without streaming', (done) => {
         source.emitAsync('build').then(() => {
             const pedometerData = new PedometerData();
             source.inputData.forEach(frame => {
@@ -71,11 +71,12 @@ describe('node processing pedometer', () => {
             return pedometer.processPedometer(pedometerData);
         }).then(steps => {
             console.log(steps.length);
+            //expect(steps).to.equal(114);
             done();
         });
     });
 
-    it('should count 116 steps with streaming', (done) => {
+    it('should count ~116 steps with streaming', (done) => {
         let steps = 0;
         sink.callback = (frame: DataFrame) => {
             steps += frame.source.position.linearVelocity.x;
@@ -83,6 +84,8 @@ describe('node processing pedometer', () => {
         model.pull({
             count: 6809
         }).then(() => {
+            console.log(steps)
+            expect(steps).to.equal(117);
             done();
         }).catch(done);
     });
@@ -151,6 +154,83 @@ describe('node processing pedometer', () => {
             let step = 0;
             sink.callback = (frame: IMUDataFrame) => {
                 step += frame.source.getPosition().linearVelocity.x;
+            };
+
+            model.pull({
+                count: (model.findNodeByUID("source") as CSVDataSource<any>).size
+            }).then(() => {
+                expect(step).to.equal(24);
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('2021-03-0520.21.25 dataset', () => {
+        let model: Model<any, any>;
+        let sink: CallbackSinkNode<any> = new CallbackSinkNode();
+        const user = new DataObject("user");
+        user.setPosition(new Absolute2DPosition(0, 0));
+
+        before(function(done) {
+            ModelBuilder.create()
+                .from(new CSVDataSource("test/data/imu/2021-03-0520.21.25.csv", (row: any) => {
+                    const frame = new IMUDataFrame();
+                    frame.frequency = 100;
+
+                    frame.source = user.clone();
+
+                    const roll = parseFloat(row['Roll'].replace(',', '.'));
+                    const pitch = parseFloat(row['Pitch'].replace(',', '.'));
+                    const yaw = parseFloat(row['Azimuth'].replace(',', '.'));
+
+                    frame.source.getPosition().orientation = Orientation.fromEuler({
+                        z: yaw,
+                        y: roll,
+                        x: pitch,
+                        unit: AngleUnit.DEGREE,
+                        order: 'XYZ'
+                    });
+
+                    frame.absoluteOrientation =  frame.source.getPosition().orientation;
+                    frame.acceleration = new Acceleration(
+                        parseFloat(row['ax'].replace(',', '.')),
+                        parseFloat(row['ay'].replace(',', '.')),
+                        parseFloat(row['az'].replace(',', '.'))
+                    );
+                    frame.linearAcceleration = new Acceleration(
+                        parseFloat(row['ax'].replace(',', '.')),
+                        parseFloat(row['ay'].replace(',', '.')),
+                        parseFloat(row['az'].replace(',', '.'))
+                    );
+                    frame.acceleration.add(new Acceleration(
+                        parseFloat(row['gFx'].replace(',', '.')),
+                        parseFloat(row['gFy'].replace(',', '.')),
+                        parseFloat(row['gFz'].replace(',', '.')),
+                        AccelerationUnit.GRAVITATIONAL_FORCE
+                    ));
+                    return frame;
+                }, {
+                    uid: "source",
+                    separator: ";"
+                }))
+                .via(new PedometerProcessingNode({
+                    minConsecutiveSteps: 1
+                }))
+                .to(sink)
+                .build().then(m => {
+                    model = m;
+                    done();
+                })
+        });
+
+        it('should count steps using processed acceleration', (done) => {
+            let step = 0;
+            sink.callback = (frame: IMUDataFrame) => {
+                const pos =  frame.source.getPosition();
+                step += pos.linearVelocity.x > 0 ? 1 : 0;
+                if (pos.linearVelocity.x > 0) {
+                    //console.log(pos.toVector3(), pos.orientation.toEuler().yaw)
+                }
             };
 
             model.pull({
