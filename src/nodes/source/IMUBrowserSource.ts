@@ -46,8 +46,7 @@ export class IMUBrowserSource extends SourceNode<IMUDataFrame> {
                 source.frequency = 1000 / event.interval;
                 source.getPosition().angularVelocity = dataFrame.angularVelocity;
 
-                dataFrame.geomagneticOrientation = source.getPosition().orientation;
-                dataFrame.absoluteOrientation = dataFrame.geomagneticOrientation;
+                dataFrame.absoluteOrientation = source.getPosition().orientation;
                 dataFrame.source = source;
                 dataFrame.frequency = source.frequency;
 
