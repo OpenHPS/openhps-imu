@@ -150,6 +150,10 @@ describe('node processing pedometer', () => {
                 })
         });
 
+        after(() => {
+            model.destroy();
+        });
+
         it('should count steps using processed acceleration', (done) => {
             let step = 0;
             sink.callback = (frame: IMUDataFrame) => {
@@ -223,6 +227,10 @@ describe('node processing pedometer', () => {
                 })
         });
 
+        after(() => {
+            model.destroy();
+        });
+        
         it('should count steps using processed acceleration', (done) => {
             let step = 0;
             sink.callback = (frame: IMUDataFrame) => {

@@ -70,19 +70,21 @@ export class PedometerProcessingNode<InOut extends IMUDataFrame> extends Process
                     // Distance travelled in windowSize
                     const distance = this.options.stepSize * stepCount;
                     const position = frame.source.getPosition();
+                    position.timestamp = frame.createdTimestamp;
                     position.linearVelocity = new LinearVelocity(
                         distance / this.options.windowSize,
                         0,
                         0,
                         LinearVelocityUnit.METER_PER_SECOND,
                     );
-                    if (position.orientation) {
+                    const orientation = frame.absoluteOrientation || position.orientation;
+                    if (orientation) {
                         const relativePosition = Vector3.fromArray([distance / this.options.windowSize, 0, 0]);
-                        const orientation = position.orientation.toEuler();
-                        orientation.x = 0;
-                        orientation.y = 0;
+                        const eulerOrientation = orientation.toEuler();
+                        eulerOrientation.x = 0;
+                        eulerOrientation.y = 0;
                         position.fromVector(
-                            position.toVector3(LengthUnit.METER).add(relativePosition.applyEuler(orientation)),
+                            position.toVector3(LengthUnit.METER).add(relativePosition.applyEuler(eulerOrientation)),
                         );
                     }
                     return this.setNodeData(frame.source, pedometerData);
