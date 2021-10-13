@@ -1,6 +1,5 @@
 import {
     Acceleration,
-    IMUDataFrame,
     LinearVelocity,
     SerializableArrayMember,
     SerializableMember,
@@ -12,6 +11,7 @@ import {
     ProcessingNode,
     ProcessingNodeOptions,
 } from '@openhps/core';
+import { IMUDataFrame } from '../../data';
 
 /**
  * Pedometer processing node

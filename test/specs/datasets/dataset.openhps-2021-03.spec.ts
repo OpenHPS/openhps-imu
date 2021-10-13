@@ -1,28 +1,26 @@
 import { 
     Absolute2DPosition, 
     Acceleration, 
-    AngleUnit, 
     CallbackNode, 
     CallbackSinkNode, 
-    DataFrame, 
     DataObject, 
-    IMUDataFrame, 
     Model, 
     ModelBuilder, 
     Orientation,
     Quaternion,
     SMAFilterNode
 } from "@openhps/core";
-import { CSVDataSink, CSVDataSource } from "@openhps/csv";
+import { CSVDataSource } from "@openhps/csv";
 import { expect } from 'chai';
 import {
     GravityProcessingNode,
+    IMUDataFrame,
     PedometerProcessingNode 
 } from '../../../src';
 
 describe('dataset openhps-2021-03', () => {
     let model: Model<any, any>;
-    let sink: CallbackSinkNode<any> = new CallbackSinkNode();
+    let sink: CallbackSinkNode<any> = new CallbackSinkNode(() => {}, { uid: "sink" });
     const user = new DataObject("user");
     user.setPosition(new Absolute2DPosition(0, 0));
 
@@ -61,17 +59,7 @@ describe('dataset openhps-2021-03', () => {
             .via(new PedometerProcessingNode({
                 minConsecutiveSteps: 1
             }))
-            .to(sink, new CSVDataSink("test/data/imu/test.csv", [
-                { id: "x", title: "x" },
-                { id: "y", title: "y" }
-            ], frame => {
-                return {
-                    x: frame.source.position.x,
-                    y: frame.source.position.y
-                };
-            }, {
-                uid: "sink"
-            }))
+            .to(sink)
             .build().then(m => {
                 model = m;
                 return model.findDataService(DataObject).insert(user.uid, user);

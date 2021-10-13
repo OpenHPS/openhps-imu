@@ -9,10 +9,10 @@ import {
     TimeService,
     Absolute2DPosition,
     DataObject,
-    IMUDataFrame,
 } from '@openhps/core';
 import {
-    AccelerationProcessingNode
+    AccelerationProcessingNode,
+    IMUDataFrame
 } from '../../src';
 
 describe('node', () => {

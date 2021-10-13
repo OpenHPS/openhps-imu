@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import 'mocha';
 import {
     DataObject,
-    IMUDataFrame,
     Magnetism,
     ModelBuilder,
     GraphBuilder,
@@ -13,7 +12,7 @@ import {
     NodeData,
 } from '@openhps/core';
 import { CSVDataSource } from '@openhps/csv';
-import { MagnetometerCalibrationNode } from '../../src';
+import { MagnetometerCalibrationNode, IMUDataFrame } from '../../src';
 
 describe('node', () => {
     describe('processing', () => {

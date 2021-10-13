@@ -1,4 +1,5 @@
-import { ObjectProcessingNode, ObjectProcessingNodeOptions, DataObject, IMUDataFrame } from '@openhps/core';
+import { ObjectProcessingNode, ObjectProcessingNodeOptions, DataObject } from '@openhps/core';
+import { IMUDataFrame } from '../../../data';
 
 /**
  * @category Processing node

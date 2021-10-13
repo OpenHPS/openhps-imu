@@ -1,4 +1,5 @@
-import { IMUDataFrame, FilterProcessingNode, DataObject, Quaternion } from '@openhps/core';
+import { FilterProcessingNode, DataObject, Quaternion } from '@openhps/core';
+import { IMUDataFrame } from '../../data';
 
 /**
  * Relative orientation processing node

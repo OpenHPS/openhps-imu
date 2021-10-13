@@ -6,8 +6,6 @@ import {
     CallbackSinkNode, 
     DataFrame, 
     DataObject, 
-    IMUDataFrame, 
-    IMUSensorObject, 
     Model, 
     ModelBuilder, 
     Orientation,
@@ -18,7 +16,9 @@ import { expect } from 'chai';
 import {
     GravityProcessingNode,
     PedometerData,
-    PedometerProcessingNode 
+    PedometerProcessingNode,
+    IMUDataFrame,
+    IMUSensorObject, 
 } from '../../src';
 
 describe('node processing pedometer', () => {

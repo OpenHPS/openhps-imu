@@ -9,12 +9,12 @@ import {
     TimeService,
     Absolute2DPosition,
     DataObject,
-    IMUDataFrame,
     AngularVelocity,
     AngularVelocityUnit,
 } from '@openhps/core';
 import {
-    RelativeOrientationProcessingNode
+    RelativeOrientationProcessingNode,
+    IMUDataFrame,
 } from '../../src';
 
 describe('node', () => {

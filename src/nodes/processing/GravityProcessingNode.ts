@@ -1,11 +1,11 @@
 import {
     DataObject,
     FilterProcessingNode,
-    IMUDataFrame,
     FilterProcessingOptions,
     Acceleration,
     AccelerationUnit,
 } from '@openhps/core';
+import { IMUDataFrame } from '../../data';
 
 /**
  * @category Processing node

@@ -7,7 +7,6 @@ import {
     Acceleration,
     Absolute2DPosition,
     DataObject,
-    IMUDataFrame,
     AngularVelocity,
     AccelerationUnit,
     Model,
@@ -16,7 +15,8 @@ import {
 } from '@openhps/core';
 import {
     GravityProcessingNode,
-    RelativeOrientationProcessingNode
+    RelativeOrientationProcessingNode,
+    IMUDataFrame
 } from '../../src';
 import { CSVDataSource } from '@openhps/csv';
 import { EvaluationIMUFrame } from '../mock/EvaluationIMUFrame';

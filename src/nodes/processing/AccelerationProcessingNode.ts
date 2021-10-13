@@ -1,4 +1,5 @@
-import { DataObject, FilterProcessingNode, IMUDataFrame, LinearVelocity } from '@openhps/core';
+import { DataObject, FilterProcessingNode, LinearVelocity } from '@openhps/core';
+import { IMUDataFrame } from '../../data';
 
 /**
  * Acceleration processing to linear velocity

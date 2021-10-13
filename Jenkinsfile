@@ -50,9 +50,8 @@ pipeline {
                     steps {
                         echo 'Publishing Release ...'
                         sh 'npm run publish:release'
-                        sh 'git push origin HEAD:master'
                         sshagent(['git-openhps-ssh']) {
-                            sh "git push origin master"
+                            sh "git push origin HEAD:master"
                         }
                     }
                 }
@@ -71,10 +70,17 @@ pipeline {
                 reportFiles: '*.*',
                 reportName: "Documentation"
             ])
+
+            archiveArtifacts artifacts: 'dist/web/openhps-imu.es.js', fingerprint: true
+            archiveArtifacts artifacts: 'dist/web/openhps-imu.es.js.map', fingerprint: true
+            archiveArtifacts artifacts: 'dist/web/openhps-imu.es.min.js', fingerprint: true
+            archiveArtifacts artifacts: 'dist/web/openhps-imu.es.min.js.map', fingerprint: true
+
             archiveArtifacts artifacts: 'dist/web/openhps-imu.js', fingerprint: true
             archiveArtifacts artifacts: 'dist/web/openhps-imu.js.map', fingerprint: true
             archiveArtifacts artifacts: 'dist/web/openhps-imu.min.js', fingerprint: true
             archiveArtifacts artifacts: 'dist/web/openhps-imu.min.js.map', fingerprint: true
+
             deleteDir()
         }
     }

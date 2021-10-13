@@ -1,12 +1,5 @@
-import {
-    Acceleration,
-    AngularVelocity,
-    IMUSensorObject,
-    IMUDataFrame,
-    Quaternion,
-    SourceNode,
-    SourceNodeOptions,
-} from '@openhps/core';
+import { Acceleration, AngularVelocity, Quaternion, SourceNode, SourceNodeOptions } from '@openhps/core';
+import { IMUSensorObject, IMUDataFrame } from '../../data';
 
 /**
  * IMU source using the HTML5 browser API for device motion and device orientation.
