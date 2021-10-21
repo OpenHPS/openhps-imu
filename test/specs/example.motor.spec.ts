@@ -14,7 +14,7 @@ import {
     AngularVelocityUnit,
     AngleUnit,
     TimeService,
-    Quaternion,
+    Orientation,
 } from '@openhps/core';
 import {
     VelocityProcessingNode,
@@ -170,7 +170,7 @@ describe('example', () => {
                     const position = robot.getPosition() as Absolute2DPosition;
                     position.x = 0;
                     position.y = 0;
-                    position.orientation = new Quaternion();
+                    position.orientation = new Orientation();
                     position.linearVelocity = new LinearVelocity(1, 0, 0);
                     position.angularVelocity = new AngularVelocity(0, 0, 0, AngularVelocityUnit.DEGREE_PER_SECOND);
                     position.timestamp = currentTime;

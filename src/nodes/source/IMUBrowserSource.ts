@@ -1,4 +1,4 @@
-import { Acceleration, AngularVelocity, Quaternion, SourceNode, SourceNodeOptions } from '@openhps/core';
+import { Acceleration, AngularVelocity, Orientation, SourceNode, SourceNodeOptions } from '@openhps/core';
 import { IMUSensorObject, IMUDataFrame } from '../../data';
 
 /**
@@ -50,7 +50,7 @@ export class IMUBrowserSource extends SourceNode<IMUDataFrame> {
 
         window.addEventListener('deviceorientation', (event) => {
             const source = this.source as IMUSensorObject;
-            source.getPosition().orientation = Quaternion.fromEuler([event.beta, event.gamma, event.alpha]);
+            source.getPosition().orientation = Orientation.fromEuler([event.beta, event.gamma, event.alpha]);
         });
 
         this.logger('debug', {

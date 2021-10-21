@@ -1,4 +1,4 @@
-import { DataObject, FilterProcessingNode, Quaternion } from '@openhps/core';
+import { DataObject, FilterProcessingNode, Orientation } from '@openhps/core';
 import { IMUDataFrame } from '../../data';
 
 /**
@@ -48,7 +48,7 @@ export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<IMUD
                 azimuth = 2 * Math.PI + azimuth;
             }
 
-            frame.absoluteOrientation = Quaternion.fromEuler([pitch, roll, azimuth]);
+            frame.absoluteOrientation = Orientation.fromEuler([pitch, roll, azimuth]);
             resolve(object);
         });
     }

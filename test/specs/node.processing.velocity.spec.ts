@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { expect } from 'chai';
 import 'mocha';
 import {
@@ -12,10 +13,10 @@ import {
     AngularVelocity,
     AngleUnit,
     AngularVelocityUnit,
-    Quaternion,
     Absolute3DPosition,
     TimeService,
     TimeUnit,
+    Orientation,
 } from '@openhps/core';
 import {
     VelocityCalculationNode,
@@ -148,7 +149,7 @@ describe('node', () => {
             const object = new DataObject();
             const position = new Absolute2DPosition(0, 0);
             position.linearVelocity = new LinearVelocity(1, 1);
-            position.orientation = Quaternion.fromEuler({ yaw: 90, pitch: 0, roll: 0, unit: AngleUnit.DEGREE });
+            position.orientation = Orientation.fromEuler({ yaw: 90, pitch: 0, roll: 0, unit: AngleUnit.DEGREE });
             position.timestamp = currentTime;
             object.setPosition(position);
             currentTime += 500;
@@ -169,7 +170,7 @@ describe('node', () => {
             const object = new DataObject();
             const position = new Absolute2DPosition(3, 3);
             position.linearVelocity = new LinearVelocity(2, 2);
-            position.orientation = Quaternion.fromEuler({ yaw: 90, pitch: 0, roll: 0, unit: AngleUnit.DEGREE });
+            position.orientation = Orientation.fromEuler({ yaw: 90, pitch: 0, roll: 0, unit: AngleUnit.DEGREE });
             position.timestamp = currentTime;
             object.setPosition(position);
             currentTime += 500;
@@ -428,7 +429,6 @@ describe('node', () => {
             const object = new DataObject('robot');
             object.setPosition(startPosition);
             frame.source = object;
-
             model.push(frame).then(() => {
                 const count = 100;
                 let promise = Promise.resolve();

@@ -9,8 +9,8 @@ import {
     LinearVelocity,
     Matrix4,
     Vector3,
-    Quaternion,
     AxisAngle,
+    Orientation,
 } from '@openhps/core';
 
 /**
@@ -87,7 +87,7 @@ export class VelocityProcessingNode<InOut extends DataFrame> extends ObjectProce
             // Predict the next location
             const newPosition = lastPosition.clone();
             if (!newPosition.orientation) {
-                newPosition.orientation = new Quaternion();
+                newPosition.orientation = new Orientation();
             }
             newPosition.timestamp = frame.createdTimestamp;
             newPosition.fromVector(
@@ -97,7 +97,7 @@ export class VelocityProcessingNode<InOut extends DataFrame> extends ObjectProce
 
             // New orientation in radians
             const newOrientation = newPosition.orientation.toEuler().toVector3().add(angular.multiplyScalar(deltaTime));
-            newPosition.orientation = Quaternion.fromEuler(newOrientation);
+            newPosition.orientation = Orientation.fromEuler(newOrientation);
             object.setPosition(newPosition);
             resolve(object);
         });

@@ -1,4 +1,4 @@
-import { FilterProcessingNode, DataObject, Quaternion } from '@openhps/core';
+import { FilterProcessingNode, DataObject, Orientation } from '@openhps/core';
 import { IMUDataFrame } from '../../data';
 
 /**
@@ -44,7 +44,7 @@ export class RelativeOrientationProcessingNode extends FilterProcessingNode<IMUD
             const beta: number = bias * (filter.beta + gyro.x * dt) + (1.0 - bias) * ((accl.x * scale) / norm);
             const gamma: number = bias * (filter.gamma + gyro.y * dt) + (1.0 - bias) * ((accl.y * -scale) / norm);
 
-            frame.relativeOrientation = Quaternion.fromEuler([beta, gamma, alpha]);
+            frame.relativeOrientation = Orientation.fromEuler([beta, gamma, alpha]);
             resolve(object);
         });
     }

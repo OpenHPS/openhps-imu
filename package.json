@@ -26,7 +26,6 @@
   ],
   "scripts": {
     "test": "mocha --config test/.mocharc.json",
-    "test:jenkins": "jenkins-mocha --cobertura --config test/.mocharc.json",
     "cover": "nyc mocha --config test/.mocharc.json && nyc report --reporter=cobertura",
     "lint": "eslint src/**",
     "clean": "shx rm -rf ./dist && shx rm -rf ./docs/out",
@@ -37,9 +36,12 @@
     "build:webpack:prod": "webpack --env prod --progress --",
     "build:webpack:dev": "webpack --env dev --progress --",
     "build:typedoc": "typedoc --options docs/typedoc.json",
-    "publish:development": "standard-version --prerelease alpha -m 'chore(alpha): %s' --author='ci <ci@openhps.org>' && npm publish --tag dev",
-    "publish:beta": "standard-version --prerelease beta -m 'chore(beta): %s' --author='ci <ci@openhps.org>' && npm publish --tag beta",
-    "publish:release": "standard-version -m 'chore(release): %s' --author='ci <ci@openhps.org>' && npm publish --tag latest"
+    "publish:development": "npm run bump:beta && npm publish --tag dev",
+    "publish:beta": "npm run bump:beta && npm publish --tag beta",
+    "publish:release": "npm run bump:beta && npm publish --tag latest",
+    "bump:development": "standard-version --prerelease alpha -m 'chore(alpha): %s' --skip.changelog",
+    "bump:beta": "standard-version --prerelease beta -m 'chore(beta): %s' --skip.changelog",
+    "bump:release": "standard-version -m 'chore(release): %s' --skip.changelog"
   },
   "keywords": [
     "openhps",
@@ -53,7 +55,7 @@
   "devDependencies": {
     "@commitlint/cli": "^13.2.1",
     "@commitlint/config-conventional": "^13.2.0",
-    "@openhps/core": "dev",
+    "@openhps/core": "^0.3.2-alpha.3",
     "@openhps/csv": "^0.1.0",
     "@purtuga/esm-webpack-plugin": "^1.5.0",
     "@types/chai": "^4.2.22",
