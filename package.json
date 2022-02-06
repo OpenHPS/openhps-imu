@@ -49,13 +49,13 @@
   ],
   "dependencies": {},
   "peerDependencies": {
-    "@openhps/core": "dev",
+    "@openhps/core": ">=0.3.13",
     "reflect-metadata": ">=0.1.13"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.2.1",
     "@commitlint/config-conventional": "^13.2.0",
-    "@openhps/core": "^0.3.2-alpha.3",
+    "@openhps/core": ">=0.3.13",
     "@openhps/csv": "^0.1.0",
     "@purtuga/esm-webpack-plugin": "^1.5.0",
     "@types/chai": "^4.2.22",
