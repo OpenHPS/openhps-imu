@@ -29,8 +29,6 @@ describe('dataset openhps-2021-03', () => {
         ModelBuilder.create()
             .from(new CSVDataSource("test/data/imu/cross2_imu.csv", (row: any) => {
                 const frame = new DataFrame();
-                frame.frequency = 50;
-
                 frame.source = user.clone();
 
                 frame.source.position = undefined;
@@ -45,7 +43,7 @@ describe('dataset openhps-2021-03', () => {
                     parseFloat(row['ACC_X']),
                     parseFloat(row['ACC_Y']),
                     parseFloat(row['ACC_Z'])
-                )));
+                ), 50));
                 return frame;
             }, {
                 uid: "source",
@@ -58,8 +56,8 @@ describe('dataset openhps-2021-03', () => {
                     key: "acceleration",
                     value: object.value
                 }];
-            }, (key: string, value: any) => {
-                
+            }, (key: string, value: any, object: Accelerometer) => {
+                object.value = Acceleration.fromVector(value);
             }, {
                 taps: 20,
                 objectFilter: (object) => object instanceof Accelerometer

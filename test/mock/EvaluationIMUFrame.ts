@@ -1,8 +1,7 @@
-import { SerializableMember, SerializableObject } from "@openhps/core";
-import { IMUDataFrame } from "../../src";
+import { DataFrame, SerializableMember, SerializableObject } from "@openhps/core";
 
 @SerializableObject()
-export class EvaluationIMUFrame extends IMUDataFrame {
+export class EvaluationIMUFrame extends DataFrame {
     @SerializableMember()
-    public evaluationFrame: IMUDataFrame;
+    public evaluationFrame: DataFrame;
 }

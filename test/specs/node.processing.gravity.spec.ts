@@ -12,6 +12,11 @@ import {
     Model,
     Orientation,
     AngleUnit,
+    DataFrame,
+    AbsoluteOrientationSensor,
+    Accelerometer,
+    GravitySensor,
+    LinearAccelerationSensor,
 } from '@openhps/core';
 import {
     GravityProcessingNode,
@@ -34,27 +39,28 @@ describe('node processing gravity', () => {
                     const pitch = parseFloat(row['Pitch'].replace(',', '.'));
                     const yaw = parseFloat(row['Azimuth'].replace(',', '.'));
 
-                    frame.absoluteOrientation = Orientation.fromEuler({
+                    frame.addSensor(new AbsoluteOrientationSensor(undefined, Orientation.fromEuler({
                         z: yaw,
                         y: roll,
                         x: pitch,
                         unit: AngleUnit.DEGREE,
                         order: 'XYZ'
-                    });
-                    frame.acceleration = new Acceleration(
+                    }), 100));
+                    frame.addSensor(new Accelerometer(undefined, new Acceleration(
                         parseFloat(row['ax'].replace(',', '.')),
                         parseFloat(row['ay'].replace(',', '.')),
                         parseFloat(row['az'].replace(',', '.'))
-                    );
-                    frame.evaluationFrame = new IMUDataFrame();
-                    frame.evaluationFrame.gravity = new Acceleration(
+                    ), 100));
+                    frame.evaluationFrame = new DataFrame();
+                    frame.evaluationFrame.addSensor(new GravitySensor(undefined, new Acceleration(
                         parseFloat(row['gFx'].replace(',', '.')),
                         parseFloat(row['gFy'].replace(',', '.')),
                         parseFloat(row['gFz'].replace(',', '.')),
                         AccelerationUnit.GRAVITATIONAL_FORCE
-                    );
-                    frame.evaluationFrame.linearAcceleration = frame.acceleration.clone();
-                    frame.acceleration.add(frame.evaluationFrame.gravity);
+                    ), 100));
+                    frame.evaluationFrame.addSensor(new Accelerometer(undefined, 
+                        frame.getSensor(Accelerometer).value.clone().add(frame.evaluationFrame.getSensor(GravitySensor).value), 
+                        100));
                     return frame;
                 }, {
                     uid: "source",
@@ -71,7 +77,7 @@ describe('node processing gravity', () => {
         it('should filter out gravity using orientation', (done) => {
             const errors = [];
             sink.callback = (frame: EvaluationIMUFrame) => {
-                const error = frame.linearAcceleration.distanceTo(frame.evaluationFrame.linearAcceleration);
+                const error = frame.getSensor(LinearAccelerationSensor).value.distanceTo(frame.evaluationFrame.getSensor(LinearAccelerationSensor).value);
                 errors.push(error);
             };
 
@@ -160,7 +166,7 @@ describe('node processing gravity', () => {
 
         ModelBuilder.create()
             .from(new CallbackSourceNode(() => {
-                const frame = new IMUDataFrame(object);
+                const frame = new DataFrame(object);
                 frame.frequency = 50;
                 frame.acceleration = new Acceleration(
                     -0.04360794275999069, 
@@ -191,7 +197,7 @@ describe('node processing gravity', () => {
 
         ModelBuilder.create()
             .from(new CallbackSourceNode(() => {
-                const frame = new IMUDataFrame(object);
+                const frame = new DataFrame(object);
                 frame.frequency = 50;
                 frame.acceleration = new Acceleration(
                     0.16284647583961487,

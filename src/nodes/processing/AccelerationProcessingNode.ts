@@ -5,6 +5,7 @@ import {
     FilterProcessingNode,
     LinearAccelerationSensor,
     LinearVelocity,
+    LinearVelocitySensor,
 } from '@openhps/core';
 
 /**
@@ -29,18 +30,18 @@ export class AccelerationProcessingNode extends FilterProcessingNode<DataFrame> 
 
     public filter(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise<DataObject>((resolve) => {
-            const linearAccl = frame.getSensor(LinearAccelerationSensor) ?? new LinearAccelerationSensor(this.uid);
             const accl = frame.getSensor(LinearAccelerationSensor) || frame.getSensor(Accelerometer);
             const dt = 1000 / accl.frequency;
-            linearAccl.value = LinearVelocity.fromArray(accl.value.clone().multiplyScalar(dt).toArray());
+            const linearVelocity = frame.getSensor(LinearVelocitySensor, this.uid)
+            linearVelocity.value = LinearVelocity.fromArray(accl.value.clone().multiplyScalar(dt).toArray());
             const position = object.getPosition();
             if (!position) {
                 return resolve(object);
             }
             if (!position.linearVelocity) {
-                position.linearVelocity = linearAccl.value.clone();
+                position.linearVelocity = linearVelocity.value.clone();
             } else {
-                position.linearVelocity.add(linearAccl.value);
+                position.linearVelocity.add(linearVelocity.value);
             }
             resolve(object);
         });

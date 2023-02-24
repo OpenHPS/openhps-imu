@@ -10,6 +10,7 @@ import {
     Absolute2DPosition,
     DataObject,
     DataFrame,
+    Accelerometer,
 } from '@openhps/core';
 import {
     AccelerationProcessingNode,
@@ -47,8 +48,7 @@ describe('node', () => {
             const frame = new DataFrame();
             const object = new DataObject();
             object.setPosition(new Absolute2DPosition(0, 0));
-            frame.frequency = 1000;
-            frame.acceleration = new Acceleration(1, 0, 0);
+            frame.addSensor(new Accelerometer("A1",  new Acceleration(1, 0, 0), 1000));
             frame.source = object;
 
             Promise.resolve(model.push(frame));

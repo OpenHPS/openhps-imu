@@ -11,6 +11,9 @@ import {
     DataObject,
     AngularVelocity,
     AngularVelocityUnit,
+    DataFrame,
+    Accelerometer,
+    Gyroscope,
 } from '@openhps/core';
 import {
     RelativeOrientationProcessingNode,
@@ -19,7 +22,7 @@ import {
 describe('node', () => {
     describe('processing relative orientation', () => {
         let model: Model;
-        let callbackSink: CallbackSinkNode<IMUDataFrame>;
+        let callbackSink: CallbackSinkNode<DataFrame>;
         const time = 0;
         let timeService: TimeService;
 
@@ -39,17 +42,16 @@ describe('node', () => {
         });
 
         it('should convert angular velocity to relative rotation', (done) => {
-            callbackSink.callback = (frame: IMUDataFrame) => {
+            callbackSink.callback = (frame: DataFrame) => {
                 const linearVelocity = frame.source.getPosition().linearVelocity;
                 done();
             };
 
-            const frame = new IMUDataFrame();
+            const frame = new DataFrame();
             const object = new DataObject();
             object.setPosition(new Absolute2DPosition(0, 0));
-            frame.frequency = 1000;
-            frame.acceleration = new Acceleration(1, 0, 0);
-            frame.angularVelocity = new AngularVelocity(0, 0, 90, AngularVelocityUnit.DEGREE_PER_SECOND);
+            frame.addSensor(new Accelerometer(undefined, new Acceleration(1, 0, 0), 1000));
+            frame.addSensor(new Gyroscope(undefined, new AngularVelocity(0, 0, 90, AngularVelocityUnit.DEGREE_PER_SECOND), 1000));
             frame.source = object;
 
             Promise.resolve(model.push(frame));

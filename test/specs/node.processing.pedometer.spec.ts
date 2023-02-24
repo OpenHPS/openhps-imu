@@ -1,11 +1,14 @@
 import { 
     Absolute2DPosition, 
+    AbsoluteOrientationSensor, 
     Acceleration, 
     AccelerationUnit, 
+    Accelerometer, 
     AngleUnit, 
     CallbackSinkNode, 
     DataFrame, 
     DataObject, 
+    LinearAccelerationSensor, 
     Model, 
     ModelBuilder, 
     Orientation,
@@ -22,22 +25,21 @@ import {
 describe('node processing pedometer', () => {
     let model: Model;
     let source = new CSVDataSource("test/data/buegler2017/DataWalking1.csv", (row: any) => {
-        const frame = new IMUDataFrame();
-        const object = new IMUSensorObject("phone");
+        const frame = new DataFrame();
+        const object = new DataObject("phone");
         object.position = new Absolute2DPosition(0, 0);
         frame.source = object;
-        frame.linearAcceleration = new Acceleration(
+        frame.addSensor(new Accelerometer("phone_accel", new Acceleration(
             parseFloat(row['0']),
             parseFloat(row['1']),
             parseFloat(row['2'])
-        );
-        frame.absoluteOrientation = Orientation.fromEuler({
+        ), 100));
+        frame.addSensor(new AbsoluteOrientationSensor("phone_orientation", Orientation.fromEuler({
             x: parseFloat(row['4']),
             y: -parseFloat(row['5']),
             z: parseFloat(row['3']),
             unit: AngleUnit.RADIAN,
-        });
-        frame.frequency = 100;
+        }), 100));
         return frame;
     }, {
         headers: false
@@ -97,7 +99,7 @@ describe('node processing pedometer', () => {
         before(function(done) {
             ModelBuilder.create()
                 .from(new CSVDataSource("test/data/imu/2021-03-0516.14.44.csv", (row: any) => {
-                    const frame = new IMUDataFrame();
+                    const frame = new DataFrame();
                     frame.frequency = 100;
 
                     frame.source = user;
@@ -154,7 +156,7 @@ describe('node processing pedometer', () => {
 
         it('should count steps using processed acceleration', (done) => {
             let step = 0;
-            sink.callback = (frame: IMUDataFrame) => {
+            sink.callback = (frame: DataFrame) => {
                 step += frame.source.getPosition().linearVelocity.x;
             };
 
@@ -176,9 +178,7 @@ describe('node processing pedometer', () => {
         before(function(done) {
             ModelBuilder.create()
                 .from(new CSVDataSource("test/data/imu/2021-03-0520.21.25.csv", (row: any) => {
-                    const frame = new IMUDataFrame();
-                    frame.frequency = 100;
-
+                    const frame = new DataFrame();
                     frame.source = user.clone();
 
                     const roll = parseFloat(row['Roll'].replace(',', '.'));
@@ -193,23 +193,17 @@ describe('node processing pedometer', () => {
                         order: 'XYZ'
                     });
 
-                    frame.absoluteOrientation =  frame.source.getPosition().orientation;
-                    frame.acceleration = new Acceleration(
-                        parseFloat(row['ax'].replace(',', '.')),
-                        parseFloat(row['ay'].replace(',', '.')),
-                        parseFloat(row['az'].replace(',', '.'))
-                    );
-                    frame.linearAcceleration = new Acceleration(
-                        parseFloat(row['ax'].replace(',', '.')),
-                        parseFloat(row['ay'].replace(',', '.')),
-                        parseFloat(row['az'].replace(',', '.'))
-                    );
-                    frame.acceleration.add(new Acceleration(
+                    frame.addSensor(new AbsoluteOrientationSensor(undefined, frame.source.getPosition().orientation, 100));
+                    frame.addSensor(new Accelerometer(undefined, new Acceleration(
                         parseFloat(row['gFx'].replace(',', '.')),
                         parseFloat(row['gFy'].replace(',', '.')),
                         parseFloat(row['gFz'].replace(',', '.')),
-                        AccelerationUnit.GRAVITATIONAL_FORCE
-                    ));
+                    ), 100));
+                    frame.addSensor(new LinearAccelerationSensor(undefined, new Acceleration(
+                        parseFloat(row['ax'].replace(',', '.')),
+                        parseFloat(row['ay'].replace(',', '.')),
+                        parseFloat(row['az'].replace(',', '.'))
+                    ), 100));
                     return frame;
                 }, {
                     uid: "source",
@@ -231,7 +225,7 @@ describe('node processing pedometer', () => {
         
         it('should count steps using processed acceleration', (done) => {
             let step = 0;
-            sink.callback = (frame: IMUDataFrame) => {
+            sink.callback = (frame: DataFrame) => {
                 const pos =  frame.source.getPosition();
                 step += pos.linearVelocity.x > 0 ? 1 : 0;
                 if (pos.linearVelocity.x > 0) {

@@ -10,6 +10,8 @@ import {
     Model,
     NodeDataService,
     NodeData,
+    DataFrame,
+    Magnetometer,
 } from '@openhps/core';
 import { CSVDataSource } from '@openhps/csv';
 import { MagnetometerCalibrationNode } from '../../src';
@@ -22,14 +24,11 @@ describe('node', () => {
                     const source = new CSVDataSource(
                         'test/data/imu/magnetometer_calibration.csv',
                         (row: any) => {
-                            const source = new DataObject('M1');
-                            const frame = new IMUDataFrame(source);
-                            frame.frequency = 1000 / 16;
-                            frame.magnetism = new Magnetism(
+                            const frame = new DataFrame(new Magnetometer("M1", new Magnetism(
                                 parseFloat(row['Bx']),
                                 parseFloat(row['By']),
                                 parseFloat(row['Bz']),
-                            );
+                            ), 1000 / 16));
                             return frame as any;
                         },
                         {
