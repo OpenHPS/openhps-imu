@@ -12,7 +12,7 @@ import {
     NodeData,
 } from '@openhps/core';
 import { CSVDataSource } from '@openhps/csv';
-import { MagnetometerCalibrationNode, IMUDataFrame } from '../../src';
+import { MagnetometerCalibrationNode } from '../../src';
 
 describe('node', () => {
     describe('processing', () => {

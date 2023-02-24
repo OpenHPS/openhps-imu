@@ -10,8 +10,10 @@ import {
     LengthUnit,
     ProcessingNode,
     ProcessingNodeOptions,
+    DataFrame,
+    AbsoluteOrientationSensor,
+    LinearAccelerationSensor,
 } from '@openhps/core';
-import { IMUDataFrame } from '../../data';
 
 /**
  * Pedometer processing node
@@ -22,7 +24,7 @@ import { IMUDataFrame } from '../../data';
  * @see {@link https://github.com/MaximilianBuegler/node-kinetics/blob/master/src/kinetics.js}
  * @author Maximilian Bügler
  */
-export class PedometerProcessingNode<InOut extends IMUDataFrame> extends ProcessingNode<InOut> {
+export class PedometerProcessingNode<InOut extends DataFrame> extends ProcessingNode<InOut> {
     protected options: PedometerOptions;
 
     constructor(options?: PedometerOptions) {
@@ -39,7 +41,7 @@ export class PedometerProcessingNode<InOut extends IMUDataFrame> extends Process
         this.options.stepSize = this.options.stepSize || 0.7;
     }
 
-    public process(frame: IMUDataFrame): Promise<IMUDataFrame> {
+    public process(frame: DataFrame): Promise<DataFrame> {
         return new Promise((resolve, reject) => {
             // Get node data for this source object
             let pedometerData: PedometerData;
@@ -77,7 +79,9 @@ export class PedometerProcessingNode<InOut extends IMUDataFrame> extends Process
                         0,
                         LinearVelocityUnit.METER_PER_SECOND,
                     );
-                    const orientation = frame.absoluteOrientation || position.orientation;
+                    const orientationSensor = frame.getSensor(AbsoluteOrientationSensor);
+                    const orientation =
+                        (orientationSensor ? orientationSensor.value : undefined) || position.orientation;
                     if (orientation) {
                         const relativePosition = Vector3.fromArray([distance / this.options.windowSize, 0, 0]);
                         const eulerOrientation = orientation.toEuler();
@@ -208,10 +212,10 @@ export class PedometerData {
     @SerializableMember()
     lastStepIndex = -Infinity;
 
-    public add(frame: IMUDataFrame): this {
-        this.accelerometerData.push(frame.linearAcceleration);
-        this.attitudeData.push(frame.absoluteOrientation.toEuler('ZYX'));
-        this.frequency = frame.frequency;
+    public add(frame: DataFrame): this {
+        this.accelerometerData.push(frame.getSensor(LinearAccelerationSensor).value);
+        this.attitudeData.push(frame.getSensor(AbsoluteOrientationSensor).value.toEuler('ZYX'));
+        this.frequency = frame.getSensor(LinearAccelerationSensor).frequency;
         return this;
     }
 

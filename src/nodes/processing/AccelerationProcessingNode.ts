@@ -1,15 +1,21 @@
-import { DataObject, FilterProcessingNode, LinearVelocity } from '@openhps/core';
-import { IMUDataFrame } from '../../data';
+import {
+    Accelerometer,
+    DataFrame,
+    DataObject,
+    FilterProcessingNode,
+    LinearAccelerationSensor,
+    LinearVelocity,
+} from '@openhps/core';
 
 /**
  * Acceleration processing to linear velocity
  *
  * @category Processing node
  */
-export class AccelerationProcessingNode extends FilterProcessingNode<IMUDataFrame> {
-    public initFilter(object: DataObject, frame: IMUDataFrame): Promise<any> {
+export class AccelerationProcessingNode extends FilterProcessingNode<DataFrame> {
+    public initFilter(object: DataObject, frame: DataFrame): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            if (!frame.acceleration && !frame.linearAcceleration) {
+            if (!frame.getSensor(Accelerometer) && !frame.getSensor(LinearAccelerationSensor)) {
                 return reject(new Error(`Acceleration processing requires accelerometer readings!`));
             }
 
@@ -21,19 +27,20 @@ export class AccelerationProcessingNode extends FilterProcessingNode<IMUDataFram
         });
     }
 
-    public filter(object: DataObject, frame: IMUDataFrame): Promise<DataObject> {
+    public filter(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise<DataObject>((resolve) => {
-            const accl = frame.linearAcceleration || frame.acceleration;
-            const dt = 1000 / frame.frequency;
-            frame.linearVelocity = LinearVelocity.fromArray(accl.clone().multiplyScalar(dt).toArray());
+            const linearAccl = frame.getSensor(LinearAccelerationSensor) ?? new LinearAccelerationSensor(this.uid);
+            const accl = frame.getSensor(LinearAccelerationSensor) || frame.getSensor(Accelerometer);
+            const dt = 1000 / accl.frequency;
+            linearAccl.value = LinearVelocity.fromArray(accl.value.clone().multiplyScalar(dt).toArray());
             const position = object.getPosition();
             if (!position) {
                 return resolve(object);
             }
             if (!position.linearVelocity) {
-                position.linearVelocity = frame.linearVelocity.clone();
+                position.linearVelocity = linearAccl.value.clone();
             } else {
-                position.linearVelocity.add(frame.linearVelocity);
+                position.linearVelocity.add(linearAccl.value);
             }
             resolve(object);
         });

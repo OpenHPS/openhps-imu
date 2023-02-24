@@ -4,13 +4,18 @@ import {
     FilterProcessingOptions,
     Acceleration,
     AccelerationUnit,
+    DataFrame,
+    Accelerometer,
+    LinearAccelerationSensor,
+    RelativeOrientationSensor,
+    AbsoluteOrientationSensor,
+    GravitySensor,
 } from '@openhps/core';
-import { IMUDataFrame } from '../../data';
 
 /**
  * @category Processing node
  */
-export class GravityProcessingNode extends FilterProcessingNode<IMUDataFrame> {
+export class GravityProcessingNode extends FilterProcessingNode<DataFrame> {
     protected options: GravityProcessingOptions;
 
     constructor(options?: GravityProcessingOptions) {
@@ -18,24 +23,24 @@ export class GravityProcessingNode extends FilterProcessingNode<IMUDataFrame> {
         this.options.method = this.options.method || GravityProcessingMethod.LOW_PASS;
     }
 
-    public initFilter(object: DataObject, frame: IMUDataFrame, options?: FilterProcessingOptions): Promise<any> {
+    public initFilter(object: DataObject, frame: DataFrame, options?: FilterProcessingOptions): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            if (!frame.acceleration) {
-                return reject(new Error(`Gravity processing requires accelerometer readings!`));
+            if (!frame.getSensor(Accelerometer)) {
+                return reject(new Error(`Gravity processing requires raw accelerometer readings!`));
             }
             resolve(options);
         });
     }
 
-    public filter(object: DataObject, frame: IMUDataFrame): Promise<DataObject> {
+    public filter(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise<DataObject>((resolve) => {
             let method: GravityProcessingMethod;
 
-            if (frame.linearAcceleration) {
+            if (frame.getSensor(LinearAccelerationSensor)) {
                 method = GravityProcessingMethod.LINEAR_ACCELERATION;
-            } else if (frame.relativeOrientation) {
+            } else if (frame.getSensor(RelativeOrientationSensor)) {
                 method = GravityProcessingMethod.RELATIVE_ORIENTATION;
-            } else if (frame.absoluteOrientation) {
+            } else if (frame.getSensor(AbsoluteOrientationSensor)) {
                 method = GravityProcessingMethod.ABSOLUTE_ORIENTATION;
             }
 
@@ -58,29 +63,44 @@ export class GravityProcessingNode extends FilterProcessingNode<IMUDataFrame> {
         });
     }
 
-    private _fromLinearAcceleration(frame: IMUDataFrame): void {
+    private _fromLinearAcceleration(frame: DataFrame): void {
         // Simply subtract the acceleration (with gravity) from the linear acceleration
-        frame.gravity = frame.acceleration.clone().sub(frame.linearAcceleration);
+        const gravity = frame.getSensor(GravitySensor, this.uid + '_gravity');
+        gravity.value = frame
+            .getSensor(Accelerometer)
+            .value.clone()
+            .sub(frame.getSensor(LinearAccelerationSensor).value);
     }
 
-    private _usingLPFilter(frame: IMUDataFrame): void {
+    private _usingLPFilter(frame: DataFrame): void {
         // Use low pass filter to filter out gravity
-        frame.gravity = new Acceleration();
-        frame.linearAcceleration = frame.acceleration.clone().sub(frame.gravity);
+        const gravity = frame.getSensor(GravitySensor, this.uid + '_gravity');
+        gravity.value = new Acceleration();
+        const linearAcceleration = frame.getSensor(LinearAccelerationSensor, this.uid + '_linearaccl');
+        linearAcceleration.value = frame.getSensor(Accelerometer).value.clone().sub(gravity.value);
     }
 
-    private _fromRelativeOrientation(frame: IMUDataFrame): void {
+    private _fromRelativeOrientation(frame: DataFrame): void {
         // Use gyroscope data to filter out gravity
-        frame.linearAcceleration = frame.acceleration.clone().multiply(frame.relativeOrientation.toEuler().toVector3());
-        frame.gravity = frame.acceleration.clone().sub(frame.linearAcceleration);
+        const gravity = frame.getSensor(GravitySensor, this.uid + '_gravity');
+        const linearAcceleration = frame.getSensor(LinearAccelerationSensor, this.uid + '_linearaccl');
+        linearAcceleration.value = frame
+            .getSensor(Accelerometer)
+            .value.clone()
+            .multiply(frame.getSensor(RelativeOrientationSensor).value.toEuler().toVector());
+        gravity.value = frame.getSensor(Accelerometer).value.clone().sub(linearAcceleration.value);
     }
 
-    private _fromAbsoluteOrientation(frame: IMUDataFrame): void {
+    private _fromAbsoluteOrientation(frame: DataFrame): void {
         // Use orientation data to filter out gravity
-        frame.gravity = new Acceleration(0, 0, 1, AccelerationUnit.GRAVITATIONAL_FORCE).applyQuaternion(
-            frame.absoluteOrientation,
+        const gravity = frame.getSensor(GravitySensor, this.uid + '_gravity');
+        gravity.value = new Acceleration(0, 0, 1, AccelerationUnit.GRAVITATIONAL_FORCE).applyQuaternion(
+            frame.getSensor(AbsoluteOrientationSensor).value,
         );
-        frame.linearAcceleration = frame.acceleration.clone().sub(frame.gravity);
+        const linearAcceleration = frame.getSensor(LinearAccelerationSensor, this.uid + '_linearaccl');
+        linearAcceleration.value = Acceleration.fromVector(
+            frame.getSensor(Accelerometer).value.clone().sub(gravity.value),
+        );
     }
 }
 

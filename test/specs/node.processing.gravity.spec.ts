@@ -16,7 +16,6 @@ import {
 import {
     GravityProcessingNode,
     RelativeOrientationProcessingNode,
-    IMUDataFrame
 } from '../../src';
 import { CSVDataSource } from '@openhps/csv';
 import { EvaluationIMUFrame } from '../mock/EvaluationIMUFrame';

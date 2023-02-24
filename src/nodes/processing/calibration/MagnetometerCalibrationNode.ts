@@ -1,18 +1,18 @@
-import { ObjectProcessingNode, ObjectProcessingNodeOptions, DataObject } from '@openhps/core';
-import { IMUDataFrame } from '../../../data';
+import { ObjectProcessingNode, ObjectProcessingNodeOptions, DataObject, DataFrame, Magnetometer } from '@openhps/core';
 
 /**
  * @category Processing node
  */
-export class MagnetometerCalibrationNode extends ObjectProcessingNode<IMUDataFrame> {
+export class MagnetometerCalibrationNode extends ObjectProcessingNode<DataFrame> {
     protected options: MagnetomerCalibrationOptions;
 
     constructor(options: MagnetomerCalibrationOptions) {
         super(options);
     }
 
-    public processObject(object: DataObject, frame: IMUDataFrame): Promise<DataObject> {
+    public processObject(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise((resolve, reject) => {
+            const magnetometer = frame.getSensor(Magnetometer);
             this.getNodeData(object)
                 .then(async (calibrationData) => {
                     if (calibrationData === undefined) {
@@ -37,14 +37,14 @@ export class MagnetometerCalibrationNode extends ObjectProcessingNode<IMUDataFra
                         this.options.count !== -1
                     ) {
                         // Add measurement
-                        calibrationData.xMax = Math.max(frame.magnetism.x, calibrationData.xMax);
-                        calibrationData.xMin = Math.min(frame.magnetism.x, calibrationData.xMin);
+                        calibrationData.xMax = Math.max(magnetometer.value.x, calibrationData.xMax);
+                        calibrationData.xMin = Math.min(magnetometer.value.x, calibrationData.xMin);
 
-                        calibrationData.yMax = Math.max(frame.magnetism.y, calibrationData.yMax);
-                        calibrationData.yMin = Math.min(frame.magnetism.y, calibrationData.yMin);
+                        calibrationData.yMax = Math.max(magnetometer.value.y, calibrationData.yMax);
+                        calibrationData.yMin = Math.min(magnetometer.value.y, calibrationData.yMin);
 
-                        calibrationData.zMax = Math.max(frame.magnetism.z, calibrationData.zMax);
-                        calibrationData.zMin = Math.min(frame.magnetism.z, calibrationData.zMin);
+                        calibrationData.zMax = Math.max(magnetometer.value.z, calibrationData.zMax);
+                        calibrationData.zMin = Math.min(magnetometer.value.z, calibrationData.zMin);
 
                         calibrationData.count += 1;
                         // Save calibration data
@@ -62,9 +62,9 @@ export class MagnetometerCalibrationNode extends ObjectProcessingNode<IMUDataFra
                         // Save calibration data
                         await this.setNodeData(object, calibrationData);
                     } else {
-                        frame.magnetism.x = frame.magnetism.x * calibrationData.scaleX;
-                        frame.magnetism.y = frame.magnetism.y * calibrationData.scaleY;
-                        frame.magnetism.z = frame.magnetism.z * calibrationData.scaleZ;
+                        magnetometer.value.x = magnetometer.value.x * calibrationData.scaleX;
+                        magnetometer.value.y = magnetometer.value.y * calibrationData.scaleY;
+                        magnetometer.value.z = magnetometer.value.z * calibrationData.scaleZ;
                     }
                     resolve(object);
                 })

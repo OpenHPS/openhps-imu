@@ -14,7 +14,6 @@ import {
 } from '@openhps/core';
 import {
     RelativeOrientationProcessingNode,
-    IMUDataFrame,
 } from '../../src';
 
 describe('node', () => {

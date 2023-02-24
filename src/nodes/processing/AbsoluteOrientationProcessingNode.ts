@@ -1,5 +1,12 @@
-import { DataObject, FilterProcessingNode, Orientation } from '@openhps/core';
-import { IMUDataFrame } from '../../data';
+import {
+    DataFrame,
+    DataObject,
+    FilterProcessingNode,
+    Orientation,
+    AbsoluteOrientationSensor,
+    Accelerometer,
+    Magnetometer,
+} from '@openhps/core';
 
 /**
  * Geomagnetic orientation processing node
@@ -7,11 +14,11 @@ import { IMUDataFrame } from '../../data';
  * @see {@link https://github.com/visakhanc/eCompass/blob/master/source/main.c}
  * @category Processing node
  */
-export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<IMUDataFrame> {
-    public initFilter(object: DataObject, frame: IMUDataFrame): Promise<any> {
+export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<DataFrame> {
+    public initFilter(object: DataObject, frame: DataFrame): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            if (frame.angularVelocity || frame.acceleration === undefined) {
-                reject(new Error(`Relative rotation processing requires accelerometer and gyroscope readings!`));
+            if (frame.getSensor(Magnetometer) === undefined || frame.getSensor(Accelerometer) === undefined) {
+                reject(new Error(`Absolute rotation processing requires accelerometer and magnetometer readings!`));
             }
 
             resolve({
@@ -22,10 +29,10 @@ export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<IMUD
         });
     }
 
-    public filter(object: DataObject, frame: IMUDataFrame): Promise<DataObject> {
+    public filter(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise<DataObject>((resolve) => {
-            const accl = frame.acceleration;
-            const mag = frame.magnetism;
+            const accl = frame.getSensor(Accelerometer).value;
+            const mag = frame.getSensor(Magnetometer).value;
 
             /* Calculate pitch and roll, in the range (-pi,pi) */
             const pitch = Math.atan2(-accl.x, Math.sqrt(accl.z * accl.z + accl.y * accl.y));
@@ -48,7 +55,8 @@ export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<IMUD
                 azimuth = 2 * Math.PI + azimuth;
             }
 
-            frame.absoluteOrientation = Orientation.fromEuler([pitch, roll, azimuth]);
+            const sensor = frame.getSensor(AbsoluteOrientationSensor, this.uid);
+            sensor.value = Orientation.fromEuler([pitch, roll, azimuth]);
             resolve(object);
         });
     }

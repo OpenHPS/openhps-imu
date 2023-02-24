@@ -17,8 +17,6 @@ import {
     GravityProcessingNode,
     PedometerData,
     PedometerProcessingNode,
-    IMUDataFrame,
-    IMUSensorObject, 
 } from '../../src';
 
 describe('node processing pedometer', () => {

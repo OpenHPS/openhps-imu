@@ -9,16 +9,16 @@ import {
     TimeService,
     Absolute2DPosition,
     DataObject,
+    DataFrame,
 } from '@openhps/core';
 import {
     AccelerationProcessingNode,
-    IMUDataFrame
 } from '../../src';
 
 describe('node', () => {
     describe('processing acceleration', () => {
         let model: Model;
-        let callbackSink: CallbackSinkNode<IMUDataFrame>;
+        let callbackSink: CallbackSinkNode<DataFrame>;
         const time = 0;
         let timeService: TimeService;
 
@@ -38,13 +38,13 @@ describe('node', () => {
         });
 
         it('should convert acceleration to linear velocity', (done) => {
-            callbackSink.callback = (frame: IMUDataFrame) => {
+            callbackSink.callback = (frame: DataFrame) => {
                 const linearVelocity = frame.source.getPosition().velocity.linear;
                 console.log(linearVelocity);
                 done();
             };
 
-            const frame = new IMUDataFrame();
+            const frame = new DataFrame();
             const object = new DataObject();
             object.setPosition(new Absolute2DPosition(0, 0));
             frame.frequency = 1000;
