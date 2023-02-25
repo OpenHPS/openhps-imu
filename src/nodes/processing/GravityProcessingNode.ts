@@ -68,10 +68,7 @@ export class GravityProcessingNode extends FilterProcessingNode<DataFrame> {
         const linearAcceleration = frame.getSensor(LinearAccelerationSensor);
 
         const gravity = frame.getSensor(GravitySensor, this.uid + '_gravity');
-        gravity.value = frame
-            .getSensor(Accelerometer)
-            .value.clone()
-            .sub(linearAcceleration.value);
+        gravity.value = frame.getSensor(Accelerometer).value.clone().sub(linearAcceleration.value);
         gravity.frequency = linearAcceleration.frequency;
     }
 

@@ -188,8 +188,8 @@ describe('node processing gravity', () => {
             }))
             .via(new RelativeOrientationProcessingNode())
             .via(new GravityProcessingNode())
-            .to(new CallbackSinkNode(frame => {
-                expect(Math.round(frame.gravity.z)).to.equal(10);
+            .to(new CallbackSinkNode((frame: DataFrame) => {
+                expect(Math.round(frame.getSensor(GravitySensor).value.z)).to.equal(10);
                 done();
             }))
             .build().then(model => {

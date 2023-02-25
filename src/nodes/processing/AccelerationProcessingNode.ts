@@ -32,7 +32,7 @@ export class AccelerationProcessingNode extends FilterProcessingNode<DataFrame> 
         return new Promise<DataObject>((resolve) => {
             const accl = frame.getSensor(LinearAccelerationSensor) || frame.getSensor(Accelerometer);
             const dt = 1000 / accl.frequency;
-            const linearVelocity = frame.getSensor(LinearVelocitySensor, this.uid)
+            const linearVelocity = frame.getSensor(LinearVelocitySensor, this.uid);
             linearVelocity.value = LinearVelocity.fromArray(accl.value.clone().multiplyScalar(dt).toArray());
             linearVelocity.frequency = accl.frequency;
             const position = object.getPosition();
