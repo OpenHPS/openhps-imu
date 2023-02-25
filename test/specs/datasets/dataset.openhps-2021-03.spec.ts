@@ -14,6 +14,7 @@ import {
     SMAFilterNode
 } from "@openhps/core";
 import { CSVDataSource } from "@openhps/csv";
+import { expect } from "chai";
 import {
     GravityProcessingNode,
     PedometerProcessingNode 
@@ -33,13 +34,13 @@ describe('dataset openhps-2021-03', () => {
 
                 frame.source.position = undefined;
 
-                frame.addSensor(new AbsoluteOrientationSensor(frame.uid + "_absoluteorientation", Orientation.fromQuaternion(new Quaternion(
+                frame.addSensor(new AbsoluteOrientationSensor("absoluteorientation", Orientation.fromQuaternion(new Quaternion(
                     parseFloat(row['QUAT_X']),
                     parseFloat(row['QUAT_Y']),
                     parseFloat(row['QUAT_Z']),
                     parseFloat(row['QUAT_W'])
                 )), 50));
-                frame.addSensor(new Accelerometer(frame.uid + "_accel", new Acceleration(
+                frame.addSensor(new Accelerometer("accel", new Acceleration(
                     parseFloat(row['ACC_X']),
                     parseFloat(row['ACC_Y']),
                     parseFloat(row['ACC_Z'])
@@ -48,8 +49,8 @@ describe('dataset openhps-2021-03', () => {
             }, {
                 uid: "source",
             }))
-            .via(new CallbackNode(frame => {
-                frame.source.position.orientation = frame.absoluteOrientation;
+            .via(new CallbackNode((frame: DataFrame) => {
+                frame.source.position.orientation = frame.getSensor(AbsoluteOrientationSensor).value;
             }))
             .via(new SMAFilterNode((object: Accelerometer) => {
                 return [{
@@ -57,7 +58,7 @@ describe('dataset openhps-2021-03', () => {
                     value: object.value
                 }];
             }, (key: string, value: any, object: Accelerometer) => {
-                object.value = Acceleration.fromVector(value);
+                object.value = value;
             }, {
                 taps: 20,
                 objectFilter: (object) => object instanceof Accelerometer
@@ -72,7 +73,7 @@ describe('dataset openhps-2021-03', () => {
                 return model.findDataService(DataObject).insert(user.uid, user);
             }).then(() => {
                 done();
-            })
+            }).catch(done);
     });
 
     after(() => {
@@ -81,6 +82,7 @@ describe('dataset openhps-2021-03', () => {
 
     it('should count steps using processed acceleration', (done) => {
         let step = 0;
+        model.once('error', done);
         sink.callback = (frame: DataFrame) => {
             const pos =  frame.source.getPosition();
             step += pos.linearVelocity.x > 0 ? 1 : 0;
@@ -103,7 +105,7 @@ describe('dataset openhps-2021-03', () => {
             });
         }
         promise.then(() => {
-            //expect(step).to.equal(122);
+            expect(step).to.equal(122);
             done();
         }).catch(done);
     }).timeout(10000);

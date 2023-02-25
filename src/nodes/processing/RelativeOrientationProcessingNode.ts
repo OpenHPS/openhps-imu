@@ -32,7 +32,7 @@ export class RelativeOrientationProcessingNode extends FilterProcessingNode<Data
     public filter(object: DataObject, frame: DataFrame, filter: any): Promise<DataObject> {
         return new Promise<DataObject>((resolve) => {
             const accl = frame.getSensor(Accelerometer);
-            const gyro = object.getPosition().angularVelocity || frame.getSensor(Gyroscope).value;
+            const gyro = (object.getPosition() ? object.getPosition().angularVelocity : undefined) || frame.getSensor(Gyroscope).value;
             const bias = 0.98;
 
             const dt = 1000 / accl.frequency;
@@ -53,6 +53,7 @@ export class RelativeOrientationProcessingNode extends FilterProcessingNode<Data
 
             const orientation = frame.getSensor(RelativeOrientationSensor, this.uid);
             orientation.value = Orientation.fromEuler([beta, gamma, alpha]);
+            orientation.frequency = accl.frequency;
             resolve(object);
         });
     }

@@ -29,7 +29,7 @@ describe('node processing pedometer', () => {
         const object = new DataObject("phone");
         object.position = new Absolute2DPosition(0, 0);
         frame.source = object;
-        frame.addSensor(new Accelerometer("phone_accel", new Acceleration(
+        frame.addSensor(new LinearAccelerationSensor("phone_accel", new Acceleration(
             parseFloat(row['0']),
             parseFloat(row['1']),
             parseFloat(row['2'])
@@ -73,7 +73,7 @@ describe('node processing pedometer', () => {
             console.log(steps.length);
             //expect(steps).to.equal(114);
             done();
-        });
+        }).catch(done);
     });
 
     it('should count ~116 steps with streaming', (done) => {
@@ -100,7 +100,6 @@ describe('node processing pedometer', () => {
             ModelBuilder.create()
                 .from(new CSVDataSource("test/data/imu/2021-03-0516.14.44.csv", (row: any) => {
                     const frame = new DataFrame();
-                    frame.frequency = 100;
 
                     frame.source = user;
 
@@ -108,36 +107,38 @@ describe('node processing pedometer', () => {
                     const pitch = parseFloat(row['Pitch'].replace(',', '.'));
                     const yaw = parseFloat(row['Azimuth'].replace(',', '.'));
 
-                    frame.absoluteOrientation = Orientation.fromEuler({
+                    frame.addSensor(new AbsoluteOrientationSensor("absoluteorientation", Orientation.fromEuler({
                         z: yaw,
                         y: roll,
                         x: pitch,
                         unit: AngleUnit.DEGREE,
                         order: 'XYZ'
-                    });
-                    frame.acceleration = new Acceleration(
+                    }), 100));
+                    frame.addSensor(new Accelerometer("accel", new Acceleration(
                         parseFloat(row['ax'].replace(',', '.')),
                         parseFloat(row['ay'].replace(',', '.')),
                         parseFloat(row['az'].replace(',', '.'))
-                    );
-                    // frame.linearAcceleration = new Acceleration(
-                    //     parseFloat(row['ax'].replace(',', '.')),
-                    //     parseFloat(row['ay'].replace(',', '.')),
-                    //     parseFloat(row['az'].replace(',', '.'))
-                    // );
-                    frame.acceleration.add(new Acceleration(
+                    ).add(new Acceleration(
                         parseFloat(row['gFx'].replace(',', '.')),
                         parseFloat(row['gFy'].replace(',', '.')),
                         parseFloat(row['gFz'].replace(',', '.')),
                         AccelerationUnit.GRAVITATIONAL_FORCE
-                    ));
+                    )), 100));
                     return frame;
                 }, {
                     uid: "source",
                     separator: ";"
                 }))
-                .via(new SMAFilterNode((obj, frame) => [frame, "acceleration"], {
-                    taps: 20
+                .via(new SMAFilterNode((object: Accelerometer) => {
+                    return [{
+                        key: "acceleration",
+                        value: object.value
+                    }];
+                }, (key: string, value: any, object: Accelerometer) => {
+                    object.value = Acceleration.fromVector(value);
+                }, {
+                    taps: 20,
+                    objectFilter: (object) => object instanceof Accelerometer
                 }))
                 .via(new GravityProcessingNode())
                 .via(new PedometerProcessingNode({

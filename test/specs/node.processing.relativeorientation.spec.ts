@@ -38,7 +38,7 @@ describe('node', () => {
                 .then((m) => {
                     model = m;
                     done();
-                });
+                }).catch(done);
         });
 
         it('should convert angular velocity to relative rotation', (done) => {
@@ -47,6 +47,7 @@ describe('node', () => {
                 done();
             };
 
+            model.once('error', done);
             const frame = new DataFrame();
             const object = new DataObject();
             object.setPosition(new Absolute2DPosition(0, 0));

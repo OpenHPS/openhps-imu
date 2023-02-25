@@ -205,7 +205,7 @@ export class PedometerProcessingNode<InOut extends DataFrame> extends Processing
 export class PedometerData {
     @SerializableArrayMember(Acceleration)
     accelerometerData: Acceleration[] = [];
-    @SerializableArrayMember(Acceleration)
+    @SerializableArrayMember(Euler)
     attitudeData: Euler[] = [];
     @SerializableMember()
     frequency: number;

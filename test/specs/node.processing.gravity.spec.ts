@@ -17,6 +17,7 @@ import {
     Accelerometer,
     GravitySensor,
     LinearAccelerationSensor,
+    Gyroscope,
 } from '@openhps/core';
 import {
     GravityProcessingNode,
@@ -39,26 +40,31 @@ describe('node processing gravity', () => {
                     const pitch = parseFloat(row['Pitch'].replace(',', '.'));
                     const yaw = parseFloat(row['Azimuth'].replace(',', '.'));
 
-                    frame.addSensor(new AbsoluteOrientationSensor(undefined, Orientation.fromEuler({
+                    frame.addSensor(new AbsoluteOrientationSensor("orientation", Orientation.fromEuler({
                         z: yaw,
                         y: roll,
                         x: pitch,
                         unit: AngleUnit.DEGREE,
                         order: 'XYZ'
                     }), 100));
-                    frame.addSensor(new Accelerometer(undefined, new Acceleration(
+                    frame.addSensor(new Accelerometer("accelerometer", new Acceleration(
                         parseFloat(row['ax'].replace(',', '.')),
                         parseFloat(row['ay'].replace(',', '.')),
                         parseFloat(row['az'].replace(',', '.'))
-                    ), 100));
+                    ).add(new Acceleration(
+                        parseFloat(row['gFx'].replace(',', '.')),
+                        parseFloat(row['gFy'].replace(',', '.')),
+                        parseFloat(row['gFz'].replace(',', '.')),
+                        AccelerationUnit.GRAVITATIONAL_FORCE
+                    )), 100));
                     frame.evaluationFrame = new DataFrame();
-                    frame.evaluationFrame.addSensor(new GravitySensor(undefined, new Acceleration(
+                    frame.evaluationFrame.addSensor(new GravitySensor("gravity", new Acceleration(
                         parseFloat(row['gFx'].replace(',', '.')),
                         parseFloat(row['gFy'].replace(',', '.')),
                         parseFloat(row['gFz'].replace(',', '.')),
                         AccelerationUnit.GRAVITATIONAL_FORCE
                     ), 100));
-                    frame.evaluationFrame.addSensor(new Accelerometer(undefined, 
+                    frame.evaluationFrame.addSensor(new Accelerometer("accelerometer", 
                         frame.getSensor(Accelerometer).value.clone().add(frame.evaluationFrame.getSensor(GravitySensor).value), 
                         100));
                     return frame;
@@ -91,7 +97,7 @@ describe('node processing gravity', () => {
                 };
                 console.log(stats);
                 done();
-            })
+            }).catch(done);
         });
     });
 
@@ -167,16 +173,17 @@ describe('node processing gravity', () => {
         ModelBuilder.create()
             .from(new CallbackSourceNode(() => {
                 const frame = new DataFrame(object);
-                frame.frequency = 50;
-                frame.acceleration = new Acceleration(
+                
+                frame.addSensor(new Accelerometer("accel", new Acceleration(
                     -0.04360794275999069, 
                     -0.016298960894346237, 
                     1.0199016332626343,
-                    AccelerationUnit.GRAVITATIONAL_FORCE);
-                frame.angularVelocity = new AngularVelocity(
+                    AccelerationUnit.GRAVITATIONAL_FORCE
+                ), 50));
+                frame.addSensor(new Gyroscope("gyro", new AngularVelocity(
                     -0.0010652969463144809, 
                     0, 
-                    -0.0021305938926289617);
+                    -0.0021305938926289617), 50));
                 return frame;
             }))
             .via(new RelativeOrientationProcessingNode())
@@ -187,7 +194,7 @@ describe('node processing gravity', () => {
             }))
             .build().then(model => {
                 return model.pull();
-            });
+            }).catch(done);
     });
 
     it('should filter out gravity from a moving object', (done) => {
@@ -198,16 +205,16 @@ describe('node processing gravity', () => {
         ModelBuilder.create()
             .from(new CallbackSourceNode(() => {
                 const frame = new DataFrame(object);
-                frame.frequency = 50;
-                frame.acceleration = new Acceleration(
+                frame.addSensor(new Accelerometer("accel", new Acceleration(
                     0.16284647583961487,
                     0.18739065527915955,
                     0.730134129524231,
-                    AccelerationUnit.GRAVITATIONAL_FORCE);
-                frame.angularVelocity = new AngularVelocity(
+                    AccelerationUnit.GRAVITATIONAL_FORCE
+                ), 50));
+                frame.addSensor(new Gyroscope("gyro", new AngularVelocity(
                     5.4010555178144175,
                     1.1334759508786076,
-                    -0.5773909449024486);
+                    -0.5773909449024486), 50));
                 return frame;
             }))
             .via(new RelativeOrientationProcessingNode())
@@ -217,6 +224,6 @@ describe('node processing gravity', () => {
             }))
             .build().then(model => {
                 return model.pull();
-            });
+            }).catch(done);
     });
 });

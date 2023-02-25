@@ -57,6 +57,7 @@ export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<Data
 
             const sensor = frame.getSensor(AbsoluteOrientationSensor, this.uid);
             sensor.value = Orientation.fromEuler([pitch, roll, azimuth]);
+            sensor.frequency = frame.getSensor(Accelerometer).frequency;
             resolve(object);
         });
     }

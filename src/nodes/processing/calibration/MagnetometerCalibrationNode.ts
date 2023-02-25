@@ -13,6 +13,9 @@ export class MagnetometerCalibrationNode extends ObjectProcessingNode<DataFrame>
     public processObject(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise((resolve, reject) => {
             const magnetometer = frame.getSensor(Magnetometer);
+            if (!magnetometer) {
+                return resolve(object);
+            }
             this.getNodeData(object)
                 .then(async (calibrationData) => {
                     if (calibrationData === undefined) {

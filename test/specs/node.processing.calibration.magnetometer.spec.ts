@@ -29,7 +29,7 @@ describe('node', () => {
                                 parseFloat(row['By']),
                                 parseFloat(row['Bz']),
                             ), 1000 / 16));
-                            return frame as any;
+                            return frame;
                         },
                         {
                             separator: ';',
