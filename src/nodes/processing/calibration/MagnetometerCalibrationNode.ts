@@ -1,6 +1,7 @@
 import { ObjectProcessingNode, ObjectProcessingNodeOptions, DataObject, DataFrame, Magnetometer } from '@openhps/core';
 
 /**
+ * @deprecated Use the MangetometerCalibrationService instead
  * @category Processing node
  */
 export class MagnetometerCalibrationNode extends ObjectProcessingNode<DataFrame> {
