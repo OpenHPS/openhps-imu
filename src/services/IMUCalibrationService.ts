@@ -1,90 +1,157 @@
-import { Acceleration, Accelerometer, AngularVelocity, CallbackSinkNode, DataFrame, Gyroscope, LinearAccelerationSensor, Model, ModelBuilder, SensorObject, SensorValue, Service, SourceNode } from "@openhps/core";
+import { 
+    Acceleration, 
+    Accelerometer, 
+    AngularVelocity, 
+    CalibrationService, 
+    DataFrame, 
+    Gyroscope, 
+    LinearAccelerationSensor,
+    SensorCalibrationData, 
+} from "@openhps/core";
 
 /**
  * IMU calibration service using user interaction
  * 
  * ## Usage
  * ```typscript
- * 
+ * ModelBuilder.create()
+ *  .addService(new IMUCalibrationService())
+ *  .from(new IMUSourceNode({ ... }))   // Depends on the platform
+ *  .via(new CalibrationNode({
+ *      service: IMUCalibrationService
+ *  }))
  * ```
  */
-export class IMUCalibrationService extends Service {
-    protected options: IMUCalibrationOptions;
-    
-    constructor(options: IMUCalibrationOptions) {
-        super();
-        this.options = options;
-    }
-
+export class IMUCalibrationService extends CalibrationService {
     /**
-     * Calibrate the IMU sensor using user interaction
+     * Calibrate the IMU sensor using user interaction. Users should be instructed to keep
+     * the phone still in the `IMUCalibrationStep` orientation.
      *
+     * @param {number} time Time to fetch data per step
      * @param {Function} userAction User action callback
      * @returns 
      */
-    calibrate(userAction: (step: IMUCalibrationStep) => Promise<void>): Promise<void> {
+    calibrate(time: number, userAction: (step: IMUCalibrationStep) => Promise<void>): Promise<void> {
         return new Promise((resolve, reject) => {
             // Calibration data
-            let running = true;
-            let model: Model;
             let accelerometer: Accelerometer | LinearAccelerationSensor;
             let gyroscope: Gyroscope;
-            let accelerationData: Acceleration[] = [];
+            let accelerationData: Map<IMUCalibrationStep, Acceleration[]> = new Map();
             let gyroscopeData: AngularVelocity[] = [];
 
-            function complete() {
-                if (!running) {
-                    return;
-                }
-                running = false;
-
-                // Compute results per sensor
-                data.forEach((values, sensor) => {
-
-                });
-
-                // Finalize
-                if (model) {
-                    model.emitAsync('destroy')
-                        .then(() => resolve()).catch(reject);
-                } else {
-                    resolve();
-                }
-            }
-
             userAction(IMUCalibrationStep.UPWARD).then(() => {
-                ModelBuilder.create()
-                    .from(this.options.source)
-                    .to(new CallbackSinkNode((frame: DataFrame) => {
-                        accelerometer = frame.getSensor(LinearAccelerationSensor) ?? frame.getSensor(Accelerometer);
-                        gyroscope = frame.getSensor(Gyroscope);
-                        accelerationData.push(accelerometer.value);
-                        gyroscopeData.push(gyroscope.value);
-                    }))
-                    .build().then((m: Model) => {
-                        model = m;
-                    }).catch(reject);
-            });
+                return this.calibrationRun(time);
+            }).then((output) => {
+                // Save gyroscope data
+                gyroscope = output.gyroscope;
+                gyroscopeData.push(...output.gyroscopeData);
+                // Save accelerometer data
+                accelerometer = output.accelerometer;
+                accelerationData.set(IMUCalibrationStep.UPWARD, output.accelerometerData);
+                return userAction(IMUCalibrationStep.DOWNWARD);
+            }).then(() => {
+                return this.calibrationRun(time);
+            }).then((output) => {
+                // Save gyroscope data
+                gyroscopeData.push(...output.gyroscopeData);
+                // Save accelerometer data
+                accelerationData.set(IMUCalibrationStep.DOWNWARD, output.accelerometerData);
+                return userAction(IMUCalibrationStep.PERPINDICULAR);
+            }).then(() => {
+                return this.calibrationRun(time);
+            }).then((output) => {
+                // Save gyroscope data
+                gyroscopeData.push(...output.gyroscopeData);
+                // Save accelerometer data
+                accelerationData.set(IMUCalibrationStep.PERPINDICULAR, output.accelerometerData);
+                // Compute results
+                return Promise.all([
+                    gyroscope ? this.calibrateGyroscope(gyroscope, gyroscopeData) : Promise.resolve(),
+                    accelerometer ? this.calibrateAccelerometer(accelerometer, accelerationData) : Promise.resolve()
+                ]);
+            }).then(() => {
+                // Persist data
+                return Promise.all([
+                    gyroscope ? this.model.findDataService(Gyroscope).insertObject(gyroscope) : Promise.resolve(),
+                    accelerometer ? this.model.findDataService(Accelerometer).insertObject(accelerometer) : Promise.resolve(),
+                ]);
+            }).then(() => {
+                resolve();
+            }).catch(reject);
         });
     }
-}
 
-export interface IMUCalibrationOptions {
-    source: SourceNode;
-    minData: number;
+    protected calibrationRun(time: number): Promise<CalibrationOutput> {
+        return new Promise((resolve) => {
+            // Calibration data
+            const calibrationData: CalibrationOutput = {
+                accelerometerData: [],
+                gyroscopeData: []
+            };
+
+            this.start(() => {}, (frame: DataFrame) => {
+                return new Promise((resolve) => {
+                    calibrationData.accelerometer = frame.getSensor(LinearAccelerationSensor) ?? frame.getSensor(Accelerometer);
+                    if (calibrationData.accelerometer) {
+                        calibrationData.accelerometerData.push(calibrationData.accelerometer.value);
+                    }
+
+                    calibrationData.gyroscope = frame.getSensor(Gyroscope);
+                    if (calibrationData.gyroscope) {
+                        calibrationData.gyroscopeData.push(calibrationData.gyroscope.value);
+                    }
+                    resolve();
+                });
+            });
+
+            setTimeout(() => {
+                // Do not stop but suspend
+                this.start(() => {}, () => {});
+                resolve(calibrationData);
+            }, time);
+        });
+    }
+
+    protected calibrateGyroscope(gyroscope: Gyroscope, data: AngularVelocity[]): Promise<void> {
+        return new Promise((resolve) => {
+            gyroscope.calibrationData = new SensorCalibrationData();
+            gyroscope.calibrationData.offset = data
+                    .reduce((a: AngularVelocity, b: AngularVelocity) => 
+                        a.add(b), new AngularVelocity(0, 0, 0))
+                    .divideScalar(data.length);
+            resolve();
+        });
+    }
+
+    protected calibrateAccelerometer(accelerometer: Accelerometer | LinearAccelerationSensor, data: Map<IMUCalibrationStep, Acceleration[]>): Promise<void> {
+        return new Promise((resolve) => {
+            
+            resolve();
+        });
+    }
 }
 
 export enum IMUCalibrationStep {
     /**
      * Position the IMU sensor upwards
+     * Example: Screen up
      */
     UPWARD,
     /**
      * Position the IMU sensor downwards
+     * Example: Screen down
      */
     DOWNWARD,
     /**
      * Position the IMU sensor perpendicular
+     * Example: Screen on its side (against a wall)
      */
     PERPINDICULAR
+}
+
+interface CalibrationOutput {
+    accelerometer?: LinearAccelerationSensor | Accelerometer;
+    gyroscope?: Gyroscope;
+    accelerometerData: Acceleration[];
+    gyroscopeData: AngularVelocity[];
 }
