@@ -8,6 +8,7 @@ import {
     LinearAccelerationSensor,
     SensorCalibrationData, 
 } from "@openhps/core";
+import { Vector3Tuple } from "@openhps/core/dist/types/three/Three";
 
 /**
  * IMU calibration service using user interaction
@@ -123,11 +124,62 @@ export class IMUCalibrationService extends CalibrationService {
         });
     }
 
-    protected calibrateAccelerometer(accelerometer: Accelerometer | LinearAccelerationSensor, data: Map<IMUCalibrationStep, Acceleration[]>): Promise<void> {
+    calibrateAccelerometer(accelerometer: Accelerometer | LinearAccelerationSensor, data: Map<IMUCalibrationStep, Acceleration[]>): Promise<void> {
         return new Promise((resolve) => {
-            
+            const data_upward = data.get(IMUCalibrationStep.UPWARD).map(d => d.toArray());
+            const data_downward = data.get(IMUCalibrationStep.DOWNWARD).map(d => d.toArray());
+            const data_perpindicular = data.get(IMUCalibrationStep.PERPINDICULAR).map(d => d.toArray());
+            const xdata = [...data_upward, ...data_downward, ...data_perpindicular];
+            const ydata = [
+                ...data_upward.map(_ => [1, 1, 1] as Vector3Tuple),             // 1g
+                ...data_downward.map(_ => [-1, -1, -1] as Vector3Tuple),        // -1g
+                ...data_perpindicular.map(_ => [0, 0, 0] as Vector3Tuple),      // 0g
+            ];
+            const result = this.nlls(xdata, ydata);
+            console.log(result);
             resolve();
         });
+    }
+
+    private nlls(sourceData: Vector3Tuple[], targetData: Vector3Tuple[], initialParams: number[] = [1, 1, 1], maxIterations: number = 1000, learningRate: number = 0.001): number[] {
+        // Define the model function that maps source data to the target data.
+        function model(params: number[], source: Vector3Tuple): Vector3Tuple {
+            const [a, b, c] = params;
+            return [source[0] * a, source[1] * b, source[2] * c];
+        }
+      
+        // Initialize the parameters.
+        let params = [...initialParams];
+      
+        for (let iteration = 0; iteration < maxIterations; iteration++) {
+          // Calculate the gradients for each parameter.
+          let gradA = 0;
+          let gradB = 0;
+          let gradC = 0;
+      
+          for (let i = 0; i < sourceData.length; i++) {
+            const sourcePoint = sourceData[i];
+            const targetPoint = targetData[i];
+      
+            const predicted = model(params, sourcePoint);
+      
+            // Compute the residuals (difference between predicted and target).
+            const residualX = predicted[0] - targetPoint[0];
+            const residualY = predicted[1] - targetPoint[1];
+            const residualZ = predicted[2] - targetPoint[2];
+      
+            // Update gradients using the residuals and source data.
+            gradA += 2 * residualX * sourcePoint[0];
+            gradB += 2 * residualY * sourcePoint[1];
+            gradC += 2 * residualZ * sourcePoint[2];
+          }
+      
+          // Update the parameters using the gradients and learning rate.
+          params[0] -= learningRate * gradA;
+          params[1] -= learningRate * gradB;
+          params[2] -= learningRate * gradC;
+        }
+        return params;
     }
 }
 
