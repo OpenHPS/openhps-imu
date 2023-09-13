@@ -5,3 +5,5 @@ coverage/
 artifacts/
 .nyc_output/
 test-results.xml
+examples/**/public/*openhps-core*
+examples/**/package-lock.json

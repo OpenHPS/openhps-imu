@@ -35,6 +35,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "examples": "shx cp node_modules/@openhps/*/dist/web/*.* examples/common/ && shx cp dist/web/*.* examples/common/ && serve ./examples",
     "test": "mocha --config test/.mocharc.json",
     "test:jenkins": "jenkins-mocha --cobertura --config test/.mocharc.json",
     "cover": "nyc mocha --config test/.mocharc.json && nyc report --reporter=cobertura",
@@ -64,25 +65,25 @@
     "openhps",
     "imu"
   ],
-  "dependencies": {},
   "peerDependencies": {
-    "@openhps/core": ">=0.5.2",
+    "@openhps/core": ">=0.5.3",
     "reflect-metadata": ">=0.1.13"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
     "@commitlint/config-conventional": "^17.7.0",
-    "@openhps/core": ">=0.5.2",
+    "@openhps/core": ">=0.5.3",
     "@openhps/csv": "^0.1.11",
+    "@openhps/web-sensors": "^0.1.6",
     "@types/chai": "^4.3.6",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.6.0",
-    "@typescript-eslint/eslint-plugin": ">=6.6.0",
-    "@typescript-eslint/parser": ">=6.6.0",
+    "@typescript-eslint/eslint-plugin": ">=6.7.0",
+    "@typescript-eslint/parser": ">=6.7.0",
     "chai": "^4.3.8",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-deprecation": "^1.5.0",
+    "eslint-plugin-deprecation": "^2.0.0",
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-jsdoc": "^46.6.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -93,6 +94,7 @@
     "nyc": "^15.1.0",
     "prettier": "^3.0.3",
     "reflect-metadata": ">=0.1.13",
+    "serve": "^14.2.1",
     "shx": "^0.3.4",
     "standard-version": "^9.5.0",
     "terser-webpack-plugin": "^5.3.9",
