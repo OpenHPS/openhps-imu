@@ -1,12 +1,12 @@
 import { 
     Acceleration, 
+    AccelerationUnit, 
     Accelerometer, 
     AngularVelocity, 
     CalibrationService, 
     DataFrame, 
     Gyroscope, 
-    LinearAccelerationSensor,
-    SensorCalibrationData, 
+    SensorCalibrationData,
 } from "@openhps/core";
 import { Vector3Tuple } from "@openhps/core/dist/types/three/Three";
 
@@ -32,40 +32,42 @@ export class IMUCalibrationService extends CalibrationService {
      * @param {Function} userAction User action callback
      * @returns 
      */
-    calibrate(time: number, userAction: (step: IMUCalibrationStep) => Promise<void>): Promise<void> {
+    calibrate(time: number, userAction: (step: IMUCalibrationStep, error?: Error) => Promise<void>): Promise<void> {
         return new Promise((resolve, reject) => {
             // Calibration data
-            let accelerometer: Accelerometer | LinearAccelerationSensor;
+            let accelerometer: Accelerometer;
             let gyroscope: Gyroscope;
             let accelerationData: Map<IMUCalibrationStep, Acceleration[]> = new Map();
             let gyroscopeData: AngularVelocity[] = [];
 
-            userAction(IMUCalibrationStep.UPWARD).then(() => {
-                return this.calibrationRun(time);
-            }).then((output) => {
-                // Save gyroscope data
-                gyroscope = output.gyroscope;
-                gyroscopeData.push(...output.gyroscopeData);
-                // Save accelerometer data
-                accelerometer = output.accelerometer;
-                accelerationData.set(IMUCalibrationStep.UPWARD, output.accelerometerData);
-                return userAction(IMUCalibrationStep.DOWNWARD);
+            /**
+             * Handle user action and store data
+             * @param {IMUCalibrationStep} step Step to handle
+             * @returns {Promise<void>} Step when completed
+             */
+            function handleAction(step: IMUCalibrationStep): Promise<void> {
+                return new Promise((resolve, reject) => {
+                    userAction(step).then(() => {
+                        return this.calibrationRun(time);
+                    }).then((output) => {
+                        // Save gyroscope data
+                        gyroscope = output.gyroscope;
+                        gyroscopeData.push(...output.gyroscopeData);
+                        // Save accelerometer data
+                        accelerometer = output.accelerometer;
+                        accelerationData.set(step, output.accelerometerData);
+                        // Check if there was too much movement
+
+                        resolve();
+                    }).catch(reject);
+                });
+            }
+            
+            handleAction.bind(this)(IMUCalibrationStep.UPWARD).then(() => {
+                return handleAction.bind(this)(IMUCalibrationStep.DOWNWARD);
             }).then(() => {
-                return this.calibrationRun(time);
-            }).then((output) => {
-                // Save gyroscope data
-                gyroscopeData.push(...output.gyroscopeData);
-                // Save accelerometer data
-                accelerationData.set(IMUCalibrationStep.DOWNWARD, output.accelerometerData);
-                return userAction(IMUCalibrationStep.PERPINDICULAR);
+                return handleAction.bind(this)(IMUCalibrationStep.PERPINDICULAR);
             }).then(() => {
-                return this.calibrationRun(time);
-            }).then((output) => {
-                // Save gyroscope data
-                gyroscopeData.push(...output.gyroscopeData);
-                // Save accelerometer data
-                accelerationData.set(IMUCalibrationStep.PERPINDICULAR, output.accelerometerData);
-                // Compute results
                 return Promise.all([
                     gyroscope ? this.calibrateGyroscope(gyroscope, gyroscopeData) : Promise.resolve(),
                     accelerometer ? this.calibrateAccelerometer(accelerometer, accelerationData) : Promise.resolve()
@@ -90,9 +92,9 @@ export class IMUCalibrationService extends CalibrationService {
                 gyroscopeData: []
             };
 
-            this.start(() => {}, (frame: DataFrame) => {
+            this.start(undefined, (frame: DataFrame) => {
                 return new Promise((resolve) => {
-                    calibrationData.accelerometer = frame.getSensor(LinearAccelerationSensor) ?? frame.getSensor(Accelerometer);
+                    calibrationData.accelerometer = frame.getSensor(Accelerometer);
                     if (calibrationData.accelerometer) {
                         calibrationData.accelerometerData.push(calibrationData.accelerometer.value);
                     }
@@ -107,7 +109,7 @@ export class IMUCalibrationService extends CalibrationService {
 
             setTimeout(() => {
                 // Do not stop but suspend
-                this.start(() => {}, () => {});
+                this.suspend();
                 resolve(calibrationData);
             }, time);
         });
@@ -124,11 +126,14 @@ export class IMUCalibrationService extends CalibrationService {
         });
     }
 
-    calibrateAccelerometer(accelerometer: Accelerometer | LinearAccelerationSensor, data: Map<IMUCalibrationStep, Acceleration[]>): Promise<void> {
+    protected calibrateAccelerometer(accelerometer: Accelerometer, data: Map<IMUCalibrationStep, Acceleration[]>): Promise<void> {
         return new Promise((resolve) => {
-            const data_upward = data.get(IMUCalibrationStep.UPWARD).map(d => d.toArray());
-            const data_downward = data.get(IMUCalibrationStep.DOWNWARD).map(d => d.toArray());
-            const data_perpindicular = data.get(IMUCalibrationStep.PERPINDICULAR).map(d => d.toArray());
+            const data_upward = data.get(IMUCalibrationStep.UPWARD)
+                .map(d => d.toTuple(AccelerationUnit.GRAVITATIONAL_FORCE));
+            const data_downward = data.get(IMUCalibrationStep.DOWNWARD)
+                .map(d => d.toTuple(AccelerationUnit.GRAVITATIONAL_FORCE));
+            const data_perpindicular = data.get(IMUCalibrationStep.PERPINDICULAR)
+                .map(d => d.toTuple(AccelerationUnit.GRAVITATIONAL_FORCE));
             const xdata = [...data_upward, ...data_downward, ...data_perpindicular];
             const ydata = [
                 ...data_upward.map(_ => [1, 1, 1] as Vector3Tuple),             // 1g
@@ -136,7 +141,8 @@ export class IMUCalibrationService extends CalibrationService {
                 ...data_perpindicular.map(_ => [0, 0, 0] as Vector3Tuple),      // 0g
             ];
             const result = this.nlls(xdata, ydata);
-            console.log(result);
+            accelerometer.calibrationData = new SensorCalibrationData();
+            accelerometer.calibrationData.offset = new Acceleration(result[0], result[1], result[2], AccelerationUnit.GRAVITATIONAL_FORCE);
             resolve();
         });
     }
@@ -202,7 +208,7 @@ export enum IMUCalibrationStep {
 }
 
 interface CalibrationOutput {
-    accelerometer?: LinearAccelerationSensor | Accelerometer;
+    accelerometer?: Accelerometer;
     gyroscope?: Gyroscope;
     accelerometerData: Acceleration[];
     gyroscopeData: AngularVelocity[];

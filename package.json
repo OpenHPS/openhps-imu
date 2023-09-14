@@ -35,7 +35,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "examples": "shx cp node_modules/@openhps/*/dist/web/*.* examples/common/ && shx cp dist/web/*.* examples/common/ && serve ./examples",
+    "examples": "shx cp node_modules/@openhps/*/dist/web/*.* examples/common/ && shx cp dist/web/*.* examples/common/",
     "test": "mocha --config test/.mocharc.json",
     "test:jenkins": "jenkins-mocha --cobertura --config test/.mocharc.json",
     "cover": "nyc mocha --config test/.mocharc.json && nyc report --reporter=cobertura",
@@ -66,15 +66,15 @@
     "imu"
   ],
   "peerDependencies": {
-    "@openhps/core": ">=0.5.3",
+    "@openhps/core": ">=0.5.4",
     "reflect-metadata": ">=0.1.13"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
     "@commitlint/config-conventional": "^17.7.0",
-    "@openhps/core": ">=0.5.3",
+    "@openhps/core": ">=0.5.4",
     "@openhps/csv": "^0.1.11",
-    "@openhps/web-sensors": "^0.1.7",
+    "@openhps/web-sensors": "^0.1.9",
     "@types/chai": "^4.3.6",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.6.0",

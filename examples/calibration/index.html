@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Web Example</title>
+        <link rel="stylesheet" href="../common/css/styles.css">
+    </head>
+    <body>
+        <button id="start">Start Test</button>
+
+        <div id="result">
+            Click the start button to test the component.
+        </div>
+
+        <script type="module">
+           import { 
+                ModelBuilder, 
+                CallbackSinkNode,
+                Magnetometer,
+                Accelerometer,
+                Gyroscope,
+                LinearAccelerationSensor,
+                DataObject,
+                CalibrationNode,
+                AccelerationUnit
+            } from '../../common/openhps-core.es.js';
+            import { SensorSourceNode } from '../../common/openhps-web-sensors.es.js';
+            import { 
+                IMUCalibrationService,
+            } from '../../common/openhps-imu.es.js';
+
+            let source = new SensorSourceNode({
+                uid: "source",
+                autoStart: false,
+                sensors: [
+                    Magnetometer,
+                    Accelerometer,
+                    Gyroscope,
+                    LinearAccelerationSensor
+                ],
+                source: new DataObject("web"),
+                interval: 100
+            });
+            let calibrationService = new IMUCalibrationService();
+            let model = undefined;
+            const synthesis = window.speechSynthesis;
+            const voiceName = "Google UK English Female";
+
+            function enableButton() {
+                document.getElementById("start").disabled = false;
+            }
+
+            function disableButton() {
+                document.getElementById("start").disabled = true;
+            }
+
+            function setButtonText(instructions) {
+                document.getElementById("start").innerHTML = instructions;
+            }
+
+            function setResult(result) {
+                document.getElementById("result").innerHTML = result;
+            }
+
+            function clickCallback(callback) {
+                document.getElementById("start").onclick = callback;
+            }
+
+            function speak(instruction) {
+                const voice = synthesis.getVoices().filter(v => v.voiceURI === voiceName)[0];
+                const utterance = new SpeechSynthesisUtterance(instruction);
+                utterance.voice = voice;
+                synthesis.speak(utterance);
+            }
+
+            function initialize() {
+                ModelBuilder.create()
+                    .addService(calibrationService)
+                    .from(source)
+                    .via(new CalibrationNode({
+                        service: IMUCalibrationService
+                    }))
+                    .to(new CallbackSinkNode(frame => {
+                        const acceleration = frame.getSensor(Accelerometer).value;
+                        setResult(`
+                            <b>Timestamp: </b> ${frame.createdTimestamp} </br>
+                            <b>Accl: </b> 
+                                x=${acceleration.x}, 
+                                y=${acceleration.y},
+                                z=${acceleration.z} </br>
+                            <b>Gyro: </b> 
+                                x=${frame.getSensor(Gyroscope).value.x}, 
+                                y=${frame.getSensor(Gyroscope).value.y},
+                                z=${frame.getSensor(Gyroscope).value.z} </br>
+                        `);
+                    }))
+                    .build().then(m => {
+                        console.log("Model created ...");
+                        model = m;
+                        model.on('error', console.error);
+                    }).catch(console.error);
+            }
+
+            function calibrate() {
+                disableButton();
+                calibrationService.calibrate(2500, (step) => {
+                    return new Promise((resolve) => {
+                        clickCallback(() => {
+                            disableButton();
+                            setTimeout(() => {
+                                resolve();
+                            }, 3000);
+                        });
+                        switch (step) {
+                            case 0:
+                                speak("Place your phone with the screen up and press the button");
+                                setButtonText("UP");
+                                break;
+                            case 1:
+                                speak("Press the button and immediately place your phone with the screen down");
+                                setButtonText("DOWN");
+                                break;
+                            case 2:
+                                speak("Place your phone with the screen on its side and press the button");
+                                setButtonText("SIDE");
+                                break;
+                        }
+                        enableButton();
+                    });
+                }).then(() => {
+                    speak("Calibration success.");
+                }).catch(ex => {
+                    console.error(ex);
+                    speak("Calibration failed. " + ex.message);
+                });
+            }
+
+
+            function start() {
+                source.start();
+                clickCallback(() => calibrate());
+                setButtonText("Calibrate");
+                enableButton();
+            }
+
+            clickCallback(() => start());
+            initialize();
+        </script>
+    </body>
+</html>
