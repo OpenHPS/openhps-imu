@@ -134,13 +134,17 @@ export class IMUCalibrationService extends CalibrationService {
                 .map(d => d.toTuple(AccelerationUnit.GRAVITATIONAL_FORCE));
             const data_perpindicular = data.get(IMUCalibrationStep.PERPINDICULAR)
                 .map(d => d.toTuple(AccelerationUnit.GRAVITATIONAL_FORCE));
-            const xdata = [...data_upward, ...data_downward, ...data_perpindicular];
+            const xdata = [
+                ...data_upward, 
+                ...data_downward, 
+                ...data_perpindicular
+            ];
             const ydata = [
                 ...data_upward.map(_ => [1, 1, 1] as Vector3Tuple),             // 1g
                 ...data_downward.map(_ => [-1, -1, -1] as Vector3Tuple),        // -1g
                 ...data_perpindicular.map(_ => [0, 0, 0] as Vector3Tuple),      // 0g
             ];
-            const result = this.nlls(xdata, ydata);
+            const result = this.nlls(xdata, ydata, [1, 1, 1], 10000);
             accelerometer.calibrationData = new SensorCalibrationData();
             accelerometer.calibrationData.offset = new Acceleration(result[0], result[1], result[2], AccelerationUnit.GRAVITATIONAL_FORCE);
             resolve();

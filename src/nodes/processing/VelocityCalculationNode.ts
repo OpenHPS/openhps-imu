@@ -30,6 +30,7 @@ export class VelocityCalculationNode<InOut extends DataFrame> extends ObjectProc
         return new Promise((resolve) => {
             const service = this.model.findDataService(object);
             const position = object.getPosition();
+            // Get the previous position
             service
                 .findByUID(object.uid)
                 .then((existingObject) => {
