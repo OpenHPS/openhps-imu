@@ -19,7 +19,6 @@ import {
  * Pedometer processing node
  *
  * Based on:
- *
  * @see {@link https://github.com/MaximilianBuegler/node-pedometer/blob/master/src/pedometer.js}
  * @see {@link https://github.com/MaximilianBuegler/node-kinetics/blob/master/src/kinetics.js}
  * @author Maximilian Bügler
@@ -213,9 +212,14 @@ export class PedometerData {
     lastStepIndex = -Infinity;
 
     public add(frame: DataFrame): this {
-        this.accelerometerData.push(frame.getSensor(LinearAccelerationSensor).value);
-        this.attitudeData.push(frame.getSensor(AbsoluteOrientationSensor).value.toEuler('ZYX'));
-        this.frequency = frame.getSensor(LinearAccelerationSensor).frequency;
+        const linearAccelerometer = frame.getSensor(LinearAccelerationSensor);
+        const absoluteOrientation = frame.getSensor(AbsoluteOrientationSensor);
+        if (!linearAccelerometer || !absoluteOrientation) {
+            throw new Error(`No linear accelerometer sensor or absolute orientation sensors in data frame!`);
+        }
+        this.accelerometerData.push(linearAccelerometer.value);
+        this.attitudeData.push(absoluteOrientation.value.toEuler('ZYX'));
+        this.frequency = linearAccelerometer.frequency;
         return this;
     }
 

@@ -70,7 +70,7 @@ describe('node processing gravity', () => {
                     return frame;
                 }, {
                     uid: "source",
-                    separator: ";"
+                    separator: ";",
                 }))
                 .via(new GravityProcessingNode())
                 .to(sink)
@@ -83,10 +83,12 @@ describe('node processing gravity', () => {
         it('should filter out gravity using orientation', (done) => {
             const errors = [];
             sink.callback = (frame: EvaluationIMUFrame) => {
-                const error = frame.getSensor(LinearAccelerationSensor).value.distanceTo(frame.evaluationFrame.getSensor(LinearAccelerationSensor).value);
+                const error = frame.getSensor(LinearAccelerationSensor).value
+                    .distanceTo(frame.evaluationFrame.getSensor(Accelerometer).value);
                 errors.push(error);
             };
 
+            model.once('error', done);
             model.pull({
                 count: (model.findNodeByUID("source") as CSVDataSource<any>).size
             }).then(() => {

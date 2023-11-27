@@ -15,7 +15,6 @@ import {
 
 /**
  * Linear and angular velocity processing
- *
  * @category Processing node
  */
 export class VelocityProcessingNode<InOut extends DataFrame> extends ObjectProcessingNode<InOut> {

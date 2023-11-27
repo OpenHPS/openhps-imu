@@ -10,7 +10,6 @@ import {
 
 /**
  * Geomagnetic orientation processing node
- *
  * @see {@link https://github.com/visakhanc/eCompass/blob/master/source/main.c}
  * @category Processing node
  */

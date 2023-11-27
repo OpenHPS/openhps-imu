@@ -1,5 +1,3 @@
-import { Service } from "@openhps/core";
+import { Service } from '@openhps/core';
 
-export class MagnetometerCalibrationService extends Service {
-
-}
+export class MagnetometerCalibrationService extends Service {}

@@ -20,7 +20,6 @@ export class GravityProcessingNode extends FilterProcessingNode<DataFrame> {
 
     constructor(options?: GravityProcessingOptions) {
         super(options);
-        this.options.method = this.options.method || GravityProcessingMethod.LOW_PASS;
     }
 
     public initFilter(object: DataObject, frame: DataFrame, options?: FilterProcessingOptions): Promise<any> {
@@ -34,29 +33,33 @@ export class GravityProcessingNode extends FilterProcessingNode<DataFrame> {
 
     public filter(object: DataObject, frame: DataFrame): Promise<DataObject> {
         return new Promise<DataObject>((resolve) => {
-            let method: GravityProcessingMethod;
+            let method: GravityProcessingMethod = this.options.method;
 
-            if (frame.getSensor(LinearAccelerationSensor)) {
-                method = GravityProcessingMethod.LINEAR_ACCELERATION;
-            } else if (frame.getSensor(RelativeOrientationSensor)) {
-                method = GravityProcessingMethod.RELATIVE_ORIENTATION;
-            } else if (frame.getSensor(AbsoluteOrientationSensor)) {
-                method = GravityProcessingMethod.ABSOLUTE_ORIENTATION;
+            if (method === undefined) {
+                if (frame.getSensor(LinearAccelerationSensor)) {
+                    method = GravityProcessingMethod.LINEAR_ACCELERATION;
+                } else if (frame.getSensor(RelativeOrientationSensor)) {
+                    method = GravityProcessingMethod.RELATIVE_ORIENTATION;
+                } else if (frame.getSensor(AbsoluteOrientationSensor)) {
+                    method = GravityProcessingMethod.ABSOLUTE_ORIENTATION;
+                } else {
+                    method = GravityProcessingMethod.LOW_PASS;
+                }
             }
 
             switch (method) {
                 case GravityProcessingMethod.LINEAR_ACCELERATION:
                     this._fromLinearAcceleration(frame);
                     break;
-                case GravityProcessingMethod.LOW_PASS:
-                    this._usingLPFilter(frame); // Unused
-                    break;
                 case GravityProcessingMethod.ABSOLUTE_ORIENTATION:
                     this._fromAbsoluteOrientation(frame);
                     break;
-                default:
                 case GravityProcessingMethod.RELATIVE_ORIENTATION:
                     this._fromRelativeOrientation(frame);
+                    break;
+                case GravityProcessingMethod.LOW_PASS:
+                default:
+                    this._usingLPFilter(frame); // Unused
                     break;
             }
             resolve(object);

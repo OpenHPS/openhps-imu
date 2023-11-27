@@ -11,7 +11,6 @@ import {
 
 /**
  * Calculate linear and angular velocity
- *
  * @category Processing node
  */
 export class VelocityCalculationNode<InOut extends DataFrame> extends ObjectProcessingNode<InOut> {

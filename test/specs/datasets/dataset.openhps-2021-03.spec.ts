@@ -16,6 +16,7 @@ import {
 import { CSVDataSource } from "@openhps/csv";
 import { expect } from "chai";
 import {
+    GravityProcessingMethod,
     GravityProcessingNode,
     PedometerProcessingNode 
 } from '../../../src';
@@ -63,7 +64,9 @@ describe('dataset openhps-2021-03', () => {
                 taps: 20,
                 objectFilter: (object) => object instanceof Accelerometer
             }))
-            .via(new GravityProcessingNode())
+            .via(new GravityProcessingNode({
+                method: GravityProcessingMethod.ABSOLUTE_ORIENTATION
+            }))
             .via(new PedometerProcessingNode({
                 minConsecutiveSteps: 1
             }))

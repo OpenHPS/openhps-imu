@@ -10,7 +10,6 @@ import {
 
 /**
  * Relative orientation processing node
- *
  * @see {@link https://www.w3.org/TR/motion-sensors/#relative-orientation-sensor}
  * @category Processing node
  */
