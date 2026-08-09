@@ -24,11 +24,13 @@ describe('node', () => {
                     const source = new CSVDataSource(
                         'test/data/imu/magnetometer_calibration.csv',
                         (row: any) => {
-                            const frame = new DataFrame(new Magnetometer("M1", new Magnetism(
-                                parseFloat(row['Bx']),
-                                parseFloat(row['By']),
-                                parseFloat(row['Bz']),
-                            ), 1000 / 16));
+                            const frame = new DataFrame(
+                                new Magnetometer(
+                                    'M1',
+                                    new Magnetism(parseFloat(row['Bx']), parseFloat(row['By']), parseFloat(row['Bz'])),
+                                    1000 / 16,
+                                ),
+                            );
                             return frame;
                         },
                         {
@@ -39,7 +41,7 @@ describe('node', () => {
                     ModelBuilder.create()
                         .addShape(
                             GraphBuilder.create()
-                                .from((source as any) as SourceNode<any>)
+                                .from(source as any as SourceNode<any>)
                                 .via(
                                     new MagnetometerCalibrationNode({
                                         count: 500,
