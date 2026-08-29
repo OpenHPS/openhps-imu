@@ -15,9 +15,7 @@ import {
     Accelerometer,
     Gyroscope,
 } from '@openhps/core';
-import {
-    RelativeOrientationProcessingNode,
-} from '../../src';
+import { RelativeOrientationProcessingNode } from '../../src';
 
 describe('node', () => {
     describe('processing relative orientation', () => {
@@ -38,7 +36,8 @@ describe('node', () => {
                 .then((m) => {
                     model = m;
                     done();
-                }).catch(done);
+                })
+                .catch(done);
         });
 
         it('should convert angular velocity to relative rotation', (done) => {
@@ -52,7 +51,9 @@ describe('node', () => {
             const object = new DataObject();
             object.setPosition(new Absolute2DPosition(0, 0));
             frame.addSensor(new Accelerometer(undefined, new Acceleration(1, 0, 0), 1000));
-            frame.addSensor(new Gyroscope(undefined, new AngularVelocity(0, 0, 90, AngularVelocityUnit.DEGREE_PER_SECOND), 1000));
+            frame.addSensor(
+                new Gyroscope(undefined, new AngularVelocity(0, 0, 90, AngularVelocityUnit.DEGREE_PER_SECOND), 1000),
+            );
             frame.source = object;
 
             Promise.resolve(model.push(frame));

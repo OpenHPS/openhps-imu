@@ -1,4 +1,4 @@
-import { DataFrame, SerializableMember, SerializableObject } from "@openhps/core";
+import { DataFrame, SerializableMember, SerializableObject } from '@openhps/core';
 
 @SerializableObject()
 export class EvaluationIMUFrame extends DataFrame {

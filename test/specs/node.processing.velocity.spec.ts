@@ -18,10 +18,7 @@ import {
     TimeUnit,
     Orientation,
 } from '@openhps/core';
-import {
-    VelocityCalculationNode,
-    VelocityProcessingNode,
-} from '../../src';
+import { VelocityCalculationNode, VelocityProcessingNode } from '../../src';
 
 describe('node', () => {
     describe('calculating velocity', () => {
@@ -49,8 +46,7 @@ describe('node', () => {
         });
 
         it('should calculate linear velocity when not provided', (done) => {
-            callbackSink.callback = (frame: DataFrame) => {
-            };
+            callbackSink.callback = (frame: DataFrame) => {};
 
             currentTime = 0;
             const startPosition = new Absolute2DPosition(0, 0);
@@ -91,7 +87,6 @@ describe('node', () => {
                 });
             });
         });
-
     });
 
     describe('processing velocity', () => {
@@ -116,7 +111,7 @@ describe('node', () => {
         after(() => {
             TimeService.initialize();
         });
-        
+
         it('should process linear velocity', (done) => {
             callbackSink.callback = (frame: DataFrame) => {
                 const position = frame.source.getPosition() as Absolute2DPosition;
@@ -435,11 +430,14 @@ describe('node', () => {
                 for (let i = 1; i <= count; i++) {
                     currentTime = i * (1000 / count);
                     promise = promise.then(() =>
-                        model.findDataService(object).findByUID("robot").then(obj => {
-                            return model.push(new DataFrame(obj));
-                        })
-                        .then(() => {})
-                        .catch(done),
+                        model
+                            .findDataService(object)
+                            .findByUID('robot')
+                            .then((obj) => {
+                                return model.push(new DataFrame(obj));
+                            })
+                            .then(() => {})
+                            .catch(done),
                     );
                 }
 

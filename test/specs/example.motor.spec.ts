@@ -16,9 +16,7 @@ import {
     TimeService,
     Orientation,
 } from '@openhps/core';
-import {
-    VelocityProcessingNode,
-} from '../../src';
+import { VelocityProcessingNode } from '../../src';
 
 describe('example', () => {
     describe('motor', () => {
