@@ -1,7 +1,7 @@
 import { ObjectProcessingNode, ObjectProcessingNodeOptions, DataObject, DataFrame, Magnetometer } from '@openhps/core';
 
 /**
- * @deprecated Use the MangetometerCalibrationService instead
+ * Magnetometer calibration processing node
  * @category Processing node
  */
 export class MagnetometerCalibrationNode extends ObjectProcessingNode<DataFrame> {
@@ -53,7 +53,11 @@ export class MagnetometerCalibrationNode extends ObjectProcessingNode<DataFrame>
                         calibrationData.count += 1;
                         // Save calibration data
                         await this.setNodeData(object, calibrationData);
-                    } else if (isNaN(calibrationData.scaleX) && calibrationData.count >= this.options.count) {
+                    } else if (
+                        isNaN(calibrationData.scaleX) &&
+                        this.options.count !== -1 &&
+                        calibrationData.count >= this.options.count
+                    ) {
                         // Calculate hard and soft iron
                         const avgDeltaX = (calibrationData.xMax + calibrationData.xMin) / 2;
                         const avgDeltaY = (calibrationData.yMax + calibrationData.yMin) / 2;
@@ -65,7 +69,7 @@ export class MagnetometerCalibrationNode extends ObjectProcessingNode<DataFrame>
                         calibrationData.scaleZ = avgDelta / avgDeltaZ;
                         // Save calibration data
                         await this.setNodeData(object, calibrationData);
-                    } else {
+                    } else if (!isNaN(calibrationData.scaleX)) {
                         magnetometer.value.x = magnetometer.value.x * calibrationData.scaleX;
                         magnetometer.value.y = magnetometer.value.y * calibrationData.scaleY;
                         magnetometer.value.z = magnetometer.value.z * calibrationData.scaleZ;

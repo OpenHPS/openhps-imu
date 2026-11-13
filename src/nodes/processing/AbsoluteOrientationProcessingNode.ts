@@ -17,7 +17,9 @@ export class AbsoluteOrientationProcessingNode extends FilterProcessingNode<Data
     public initFilter(object: DataObject, frame: DataFrame): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             if (frame.getSensor(Magnetometer) === undefined || frame.getSensor(Accelerometer) === undefined) {
-                reject(new Error(`Absolute rotation processing requires accelerometer and magnetometer readings!`));
+                return reject(
+                    new Error(`Absolute rotation processing requires accelerometer and magnetometer readings!`),
+                );
             }
 
             resolve({

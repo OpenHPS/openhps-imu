@@ -8,7 +8,8 @@ import {
     Gyroscope,
     SensorCalibrationData,
 } from '@openhps/core';
-import { Vector3Tuple } from '@openhps/core/dist/types/three/Three';
+
+type Vector3Tuple = [number, number, number];
 
 /**
  * IMU calibration service using user interaction
@@ -120,11 +121,14 @@ export class IMUCalibrationService extends CalibrationService {
                 });
             });
 
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 // Do not stop but suspend
                 this.suspend();
                 resolve(calibrationData);
             }, time);
+            this.once('destroy', () => {
+                clearTimeout(timer);
+            });
         });
     }
 

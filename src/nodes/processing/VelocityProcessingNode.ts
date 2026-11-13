@@ -13,6 +13,8 @@ import {
     Orientation,
 } from '@openhps/core';
 
+const ZERO = Vector3.fromArray([0, 0, 0]);
+
 /**
  * Linear and angular velocity processing
  * @category Processing node
@@ -59,12 +61,12 @@ export class VelocityProcessingNode<InOut extends DataFrame> extends ObjectProce
             // and add it to the existing position vector of our last known position
             const relativePosition = Vector3.fromArray([0, 0, 0]);
 
-            if (angular.equals(Vector3.fromArray([0, 0, 0]))) {
+            if (angular.equals(ZERO)) {
                 // Simply apply the linear velocity
                 relativePosition.applyMatrix4(
                     new Matrix4().makeTranslation(linearMovement.x, linearMovement.y, linearMovement.z),
                 );
-            } else if (!linear.equals(Vector3.fromArray([0, 0, 0]))) {
+            } else if (!linear.equals(ZERO)) {
                 // Apply linear and angular velocity
                 const rX = linear.clone().divideScalar(angular.x === 0 ? 1 : angular.x);
                 const rY = linear.clone().divideScalar(angular.y === 0 ? 1 : angular.y);
@@ -95,7 +97,10 @@ export class VelocityProcessingNode<InOut extends DataFrame> extends ObjectProce
             );
 
             // New orientation in radians
-            const newOrientation = newPosition.orientation.toEuler().toVector3().add(angular.multiplyScalar(deltaTime));
+            const newOrientation = newPosition.orientation
+                .toEuler()
+                .toVector()
+                .add(angular.clone().multiplyScalar(deltaTime));
             newPosition.orientation = Orientation.fromEuler(newOrientation);
             object.setPosition(newPosition);
             resolve(object);

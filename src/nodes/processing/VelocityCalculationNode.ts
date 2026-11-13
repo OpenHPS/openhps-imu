@@ -33,7 +33,10 @@ export class VelocityCalculationNode<InOut extends DataFrame> extends ObjectProc
             service
                 .findByUID(object.uid)
                 .then((existingObject) => {
-                    const existingPosition = existingObject.getPosition();
+                    const existingPosition = existingObject ? existingObject.getPosition() : undefined;
+                    if (!existingPosition) {
+                        return resolve(object);
+                    }
                     // Position difference
                     const difference = position
                         .toVector3(LengthUnit.METER)
@@ -42,6 +45,9 @@ export class VelocityCalculationNode<InOut extends DataFrame> extends ObjectProc
                         position.timestamp - existingPosition.timestamp,
                         TimeUnit.SECOND,
                     );
+                    if (timeDifference <= 0) {
+                        return resolve(object);
+                    }
                     difference.divideScalar(timeDifference);
                     position.linearVelocity = new LinearVelocity(
                         difference.x,
@@ -51,7 +57,8 @@ export class VelocityCalculationNode<InOut extends DataFrame> extends ObjectProc
                     );
                     resolve(object);
                 })
-                .catch(() => {
+                .catch((err) => {
+                    this.logger('error', `Failed to calculate velocity for object ${object.uid}`, err);
                     resolve(object);
                 });
         });

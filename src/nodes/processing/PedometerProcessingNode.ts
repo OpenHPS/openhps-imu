@@ -71,24 +71,26 @@ export class PedometerProcessingNode<InOut extends DataFrame> extends Processing
                     // Distance travelled in windowSize
                     const distance = this.options.stepSize * stepCount;
                     const position = frame.source.getPosition();
-                    position.timestamp = frame.createdTimestamp;
-                    position.linearVelocity = new LinearVelocity(
-                        distance / this.options.windowSize,
-                        0,
-                        0,
-                        LinearVelocityUnit.METER_PER_SECOND,
-                    );
-                    const orientationSensor = frame.getSensor(AbsoluteOrientationSensor);
-                    const orientation =
-                        (orientationSensor ? orientationSensor.value : undefined) || position.orientation;
-                    if (orientation) {
-                        const relativePosition = Vector3.fromArray([distance / this.options.windowSize, 0, 0]);
-                        const eulerOrientation = orientation.toEuler();
-                        eulerOrientation.x = 0;
-                        eulerOrientation.y = 0;
-                        position.fromVector(
-                            position.toVector3(LengthUnit.METER).add(relativePosition.applyEuler(eulerOrientation)),
+                    if (position) {
+                        position.timestamp = frame.createdTimestamp;
+                        position.linearVelocity = new LinearVelocity(
+                            distance / this.options.windowSize,
+                            0,
+                            0,
+                            LinearVelocityUnit.METER_PER_SECOND,
                         );
+                        const orientationSensor = frame.getSensor(AbsoluteOrientationSensor);
+                        const orientation =
+                            (orientationSensor ? orientationSensor.value : undefined) || position.orientation;
+                        if (orientation) {
+                            const relativePosition = Vector3.fromArray([distance / this.options.windowSize, 0, 0]);
+                            const eulerOrientation = orientation.toEuler();
+                            eulerOrientation.x = 0;
+                            eulerOrientation.y = 0;
+                            position.fromVector(
+                                position.toVector3(LengthUnit.METER).add(relativePosition.applyEuler(eulerOrientation)),
+                            );
+                        }
                     }
                     return this.setNodeData(frame.source, pedometerData);
                 })
@@ -123,13 +125,14 @@ export class PedometerProcessingNode<InOut extends DataFrame> extends Processing
             // Max and sum peak of window and settings
             let windowMax = Math.max(this.options.minPeak, Math.min(this.options.maxPeak, Math.max(...window)));
             let windowSum = window.reduce((a, b) => a + b);
-            const windowAvg = windowSum / windowSize;
             const offset = Math.ceil(windowSize / 2);
 
             let steps: number[] = [];
             let lastPeak = data.lastStepIndex;
 
             for (let i = offset; i < verticalComponent.length - offset - 1; i++) {
+                // Average of the current window
+                const windowAvg = windowSum / windowSize;
                 // If the current value minus the mean value of the current window is larger than the thresholded maximum
                 // and the values decrease after i, but increase prior to i
                 // and the last peak is at least taoMin steps before
@@ -195,7 +198,7 @@ export class PedometerProcessingNode<InOut extends DataFrame> extends Processing
         return arr.map((val) => {
             if (window.length >= size) window.shift();
             window.push(val);
-            return window.reduce((a, b) => a + b) / arr.length;
+            return window.reduce((a, b) => a + b) / window.length;
         });
     }
 }
