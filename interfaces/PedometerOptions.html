@@ -11,14 +11,14 @@
 <li><a href="" aria-current="page">PedometerOptions</a></li></ul>
 <h1>Interface PedometerOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">PedometerOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#framefilter">frameFilter</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">frame</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">DataFrame</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxpeak">maxPeak</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxsteptime">maxStepTime</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#meanfiltersize">meanFilterSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#minconsecutivesteps">minConsecutiveSteps</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#minpeak">minPeak</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#minsteptime">minStepTime</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#name">name</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#peakthreshold">peakThreshold</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#stepsize">stepSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#uid">uid</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#windowsize">windowSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="1006">
+<section class="tsd-panel tsd-hierarchy" data-refl="796">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-signature-type">ProcessingNodeOptions</span>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">PedometerOptions</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L234">src/nodes/processing/PedometerProcessingNode.ts:234</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L237">src/nodes/processing/PedometerProcessingNode.ts:237</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -56,42 +56,42 @@
 <div class="tsd-comment tsd-typography"><p>Maximum magnitude of a steps largest postive peak</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L246">src/nodes/processing/PedometerProcessingNode.ts:246</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L249">src/nodes/processing/PedometerProcessingNode.ts:249</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxsteptime"><code class="tsd-tag">Optional</code><span>max<wbr/>Step<wbr/>Time</span><a href="#maxsteptime" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxStepTime</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Maximum time between two steps to be considered consecutive</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L262">src/nodes/processing/PedometerProcessingNode.ts:262</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L265">src/nodes/processing/PedometerProcessingNode.ts:265</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="meanfiltersize"><code class="tsd-tag">Optional</code><span>mean<wbr/>Filter<wbr/>Size</span><a href="#meanfiltersize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">meanFilterSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Amount of smoothing</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L266">src/nodes/processing/PedometerProcessingNode.ts:266</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L269">src/nodes/processing/PedometerProcessingNode.ts:269</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="minconsecutivesteps"><code class="tsd-tag">Optional</code><span>min<wbr/>Consecutive<wbr/>Steps</span><a href="#minconsecutivesteps" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">minConsecutiveSteps</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Minimum number of consecutive steps to be counted</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L258">src/nodes/processing/PedometerProcessingNode.ts:258</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L261">src/nodes/processing/PedometerProcessingNode.ts:261</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="minpeak"><code class="tsd-tag">Optional</code><span>min<wbr/>Peak</span><a href="#minpeak" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">minPeak</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Minimum magnitude of a steps largest positive peak</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L242">src/nodes/processing/PedometerProcessingNode.ts:242</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L245">src/nodes/processing/PedometerProcessingNode.ts:245</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="minsteptime"><code class="tsd-tag">Optional</code><span>min<wbr/>Step<wbr/>Time</span><a href="#minsteptime" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">minStepTime</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Minimum time in seconds between two steps</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L250">src/nodes/processing/PedometerProcessingNode.ts:250</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L253">src/nodes/processing/PedometerProcessingNode.ts:253</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="name"><code class="tsd-tag">Optional</code><span>name</span><a href="#name" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">name</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -107,14 +107,14 @@ Used for querying a node by its name.</p>
 <div class="tsd-comment tsd-typography"><p>Minimum ratio of the current window's maximum to be considered a step</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L254">src/nodes/processing/PedometerProcessingNode.ts:254</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L257">src/nodes/processing/PedometerProcessingNode.ts:257</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="stepsize"><code class="tsd-tag">Optional</code><span>step<wbr/>Size</span><a href="#stepsize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">stepSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Step size in meters</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L270">src/nodes/processing/PedometerProcessingNode.ts:270</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L273">src/nodes/processing/PedometerProcessingNode.ts:273</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="uid"><code class="tsd-tag">Optional</code><span>uid</span><a href="#uid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">uid</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -129,7 +129,7 @@ Used for querying a node by its name.</p>
 <div class="tsd-comment tsd-typography"><p>Length of the window in seconds</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3f8cd8894a4c4d79de126474a1a28c9049c3ac76/src/nodes/processing/PedometerProcessingNode.ts#L238">src/nodes/processing/PedometerProcessingNode.ts:238</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/OpenHPS/openhps-imu/blob/3c37c0579790f9fb757cd951ccb856b85ec55e21/src/nodes/processing/PedometerProcessingNode.ts#L241">src/nodes/processing/PedometerProcessingNode.ts:241</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
